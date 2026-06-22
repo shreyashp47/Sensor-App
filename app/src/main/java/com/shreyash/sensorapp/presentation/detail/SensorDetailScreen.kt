@@ -550,7 +550,7 @@ private fun DrawScope.drawCrosshairTooltip(value: Float, x: Float, y: Float) {
 }
 
 private fun formatLargeValue(value: Float): String {
-    return String.format("%.3f", value)
+    return String.format("%.1f", value)
 }
 
 private fun formatDetailValue(value: Float?): String {
