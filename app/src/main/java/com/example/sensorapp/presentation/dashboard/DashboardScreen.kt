@@ -1,13 +1,6 @@
 package com.example.sensorapp.presentation.dashboard
 
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.History
@@ -45,7 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -55,7 +46,6 @@ import com.example.sensorapp.domain.model.SensorState
 import com.example.sensorapp.domain.model.SensorType
 import com.example.sensorapp.presentation.permission.PermissionDialog
 import com.example.sensorapp.presentation.permission.rememberPermissionHandler
-import com.example.sensorapp.presentation.theme.SensorGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -161,19 +151,7 @@ fun SensorListItem(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                     )
-                } else if (state.latestReading != null) {
-                    val value = state.latestReading.values.firstOrNull() ?: 0f
-                    val unit = state.type.unitSingle ?: state.type.unitX
-                    Text(
-                        text = "${formatValue(value)} ${unit}".trimEnd(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
-            }
-            if (isAvailable) {
-                LiveDot()
-                Spacer(Modifier.width(8.dp))
             }
             Icon(
                 imageVector = Icons.Default.ChevronRight,
@@ -211,28 +189,4 @@ fun SensorListItem(
     }
 }
 
-@Composable
-fun LiveDot() {
-    val infiniteTransition = rememberInfiniteTransition()
-    val alpha by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 0.3f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-    Box(
-        modifier = Modifier
-            .size(10.dp)
-            .clip(CircleShape)
-            .background(SensorGreen.copy(alpha = alpha))
-    )
-}
 
-private fun formatValue(value: Float): String {
-    return if (value >= 1000) String.format("%.1f", value)
-    else if (value >= 100) String.format("%.1f", value)
-    else if (value >= 10) String.format("%.2f", value)
-    else String.format("%.3f", value)
-}

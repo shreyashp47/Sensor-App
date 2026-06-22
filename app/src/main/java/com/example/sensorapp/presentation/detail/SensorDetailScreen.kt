@@ -30,7 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -47,7 +47,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -60,13 +59,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sensorapp.domain.model.SensorReading
 import com.example.sensorapp.domain.model.SensorType
@@ -85,24 +81,11 @@ fun SensorDetailScreen(
     viewModel: DetailViewModel = hiltViewModel()
 ) {
     val currentReading by viewModel.currentReading.collectAsStateWithLifecycle()
-    val isLogging by viewModel.isLogging.collectAsStateWithLifecycle()
+    val isRunning by viewModel.isRunning.collectAsStateWithLifecycle()
     val history by viewModel.history.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_START -> viewModel.startObserving()
-                Lifecycle.Event.ON_STOP -> viewModel.stopObserving()
-                else -> {}
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
 
     Scaffold(
         topBar = {
@@ -118,56 +101,32 @@ fun SensorDetailScreen(
                 )
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            LiveIndicator()
-
-            Spacer(Modifier.height(16.dp))
-
-            LiveValueDisplay(
-                reading = currentReading,
-                sensorType = sensorType
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            LiveLineChart(
-                readings = history,
-                sensorType = sensorType,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = {
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp)
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
+                    .padding(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
-                    onClick = { viewModel.toggleLogging() },
+                    onClick = {
+                        if (isRunning) viewModel.stop()
+                        else viewModel.start()
+                    },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isLogging) MaterialTheme.colorScheme.error
+                        containerColor = if (isRunning) MaterialTheme.colorScheme.error
                             else MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Icon(
-                        imageVector = if (isLogging) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        imageVector = if (isRunning) Icons.Default.Stop else Icons.Default.PlayArrow,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text(if (isLogging) "Pause Logging" else "Start Logging")
+                    Text(if (isRunning) "Stop" else "Start")
                 }
 
                 Button(
@@ -191,19 +150,62 @@ fun SensorDetailScreen(
                     Text("Export CSV")
                 }
             }
+        }
+    ) { padding ->
+        if (!isRunning && currentReading == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Press Start to begin",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (isRunning) LiveIndicator()
 
-            Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(16.dp))
 
-            Text(
-                text = "X: ${formatDetailValue(currentReading?.values?.getOrNull(0))} ${sensorType.unitX}" +
-                        if (sensorType.axisCount >= 2) "  Y: ${formatDetailValue(currentReading?.values?.getOrNull(1))} ${sensorType.unitY}" else "" +
-                        if (sensorType.axisCount >= 3) "  Z: ${formatDetailValue(currentReading?.values?.getOrNull(2))} ${sensorType.unitZ}" else "",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
+                LiveValueDisplay(
+                    reading = currentReading,
+                    sensorType = sensorType
+                )
 
-            Spacer(Modifier.height(32.dp))
+                Spacer(Modifier.height(24.dp))
+
+                LiveLineChart(
+                    readings = history,
+                    sensorType = sensorType,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Text(
+                    text = "X: ${formatDetailValue(currentReading?.values?.getOrNull(0))} ${sensorType.unitX}" +
+                            if (sensorType.axisCount >= 2) "  Y: ${formatDetailValue(currentReading?.values?.getOrNull(1))} ${sensorType.unitY}" else "" +
+                            if (sensorType.axisCount >= 3) "  Z: ${formatDetailValue(currentReading?.values?.getOrNull(2))} ${sensorType.unitZ}" else "",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(Modifier.height(16.dp))
+            }
         }
     }
 }
