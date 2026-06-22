@@ -79,7 +79,7 @@ jobs:
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | tr -d ' \n\r' | base64 -d > keystore_details/sensor.jks
 
       - name: Read keystore properties
-        id: keystore_props
+        id: keystore_properties
         run: |
           echo "store_password=$(grep 'storePassword' keystore_details/keystore.properties | cut -d'=' -f2)" >> $GITHUB_OUTPUT
           echo "key_password=$(grep 'keyPassword' keystore_details/keystore.properties | cut -d'=' -f2)" >> $GITHUB_OUTPUT
@@ -88,9 +88,9 @@ jobs:
       - name: Build AAB (bundleRelease)
         env:
           ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/keystore_details/sensor.jks
-          ANDROID_KEYSTORE_PASSWORD: ${{ steps.keystore_props.outputs.store_password }}
-          ANDROID_KEY_ALIAS: ${{ steps.keystore_props.outputs.key_alias }}
-          ANDROID_KEY_PASSWORD: ${{ steps.keystore_props.outputs.key_password }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ steps.keystore_properties.outputs.store_password }}
+          ANDROID_KEY_ALIAS: ${{ steps.keystore_properties.outputs.key_alias }}
+          ANDROID_KEY_PASSWORD: ${{ steps.keystore_properties.outputs.key_password }}
         run: ./gradlew bundleRelease
 
       - name: Rename AAB file
