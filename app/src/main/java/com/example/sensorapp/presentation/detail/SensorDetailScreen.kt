@@ -1,0 +1,476 @@
+package com.example.sensorapp.presentation.detail
+
+import android.content.ContentValues
+import android.content.Context
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.sensorapp.domain.model.SensorReading
+import com.example.sensorapp.domain.model.SensorType
+import com.example.sensorapp.presentation.theme.SensorGreen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.BufferedWriter
+import java.io.OutputStreamWriter
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SensorDetailScreen(
+    sensorType: SensorType,
+    onBack: () -> Unit,
+    viewModel: DetailViewModel = hiltViewModel()
+) {
+    val currentReading by viewModel.currentReading.collectAsStateWithLifecycle()
+    val isLogging by viewModel.isLogging.collectAsStateWithLifecycle()
+    val history by viewModel.history.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> viewModel.startObserving()
+                Lifecycle.Event.ON_STOP -> viewModel.stopObserving()
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text(sensorType.displayName) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            LiveIndicator()
+
+            Spacer(Modifier.height(16.dp))
+
+            LiveValueDisplay(
+                reading = currentReading,
+                sensorType = sensorType
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            LiveLineChart(
+                readings = history,
+                sensorType = sensorType,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = { viewModel.toggleLogging() },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isLogging) MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(
+                        imageVector = if (isLogging) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(if (isLogging) "Pause Logging" else "Start Logging")
+                }
+
+                Button(
+                    onClick = {
+                        scope.launch {
+                            val uri = exportToCsv(context, history, sensorType)
+                            if (uri != null) {
+                                snackbarHostState.showSnackbar("CSV exported to Downloads")
+                            }
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    enabled = history.isNotEmpty()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Download,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text("Export CSV")
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                text = "X: ${formatDetailValue(currentReading?.values?.getOrNull(0))} ${sensorType.unitX}" +
+                        if (sensorType.axisCount >= 2) "  Y: ${formatDetailValue(currentReading?.values?.getOrNull(1))} ${sensorType.unitY}" else "" +
+                        if (sensorType.axisCount >= 3) "  Z: ${formatDetailValue(currentReading?.values?.getOrNull(2))} ${sensorType.unitZ}" else "",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+private fun LiveIndicator() {
+    val infiniteTransition = rememberInfiniteTransition()
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.3f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = SensorGreen.copy(alpha = 0.15f)
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(SensorGreen.copy(alpha = alpha))
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = "LIVE",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = SensorGreen
+            )
+        }
+    }
+}
+
+@Composable
+private fun LiveValueDisplay(
+    reading: SensorReading?,
+    sensorType: SensorType
+) {
+    if (reading == null) {
+        Text(
+            text = "Waiting for sensor data...",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        return
+    }
+
+    if (sensorType.axisCount == 1) {
+        val value = reading.values.firstOrNull() ?: 0f
+        Text(
+            text = formatLargeValue(value),
+            style = MaterialTheme.typography.displayLarge,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        if (sensorType.unitSingle != null && sensorType.unitSingle.isNotEmpty()) {
+            Text(
+                text = sensorType.unitSingle,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    } else {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            AxisValue(
+                label = "X",
+                value = reading.values.getOrNull(0) ?: 0f,
+                unit = sensorType.unitX
+            )
+            if (sensorType.axisCount >= 2) {
+                AxisValue(
+                    label = "Y",
+                    value = reading.values.getOrNull(1) ?: 0f,
+                    unit = sensorType.unitY
+                )
+            }
+            if (sensorType.axisCount >= 3) {
+                AxisValue(
+                    label = "Z",
+                    value = reading.values.getOrNull(2) ?: 0f,
+                    unit = sensorType.unitZ
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AxisValue(
+    label: String,
+    value: Float,
+    unit: String
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = formatLargeValue(value),
+            style = MaterialTheme.typography.displayMedium,
+            fontWeight = FontWeight.Bold
+        )
+        if (unit.isNotEmpty()) {
+            Text(
+                text = unit,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun LiveLineChart(
+    readings: List<SensorReading>,
+    sensorType: SensorType,
+    modifier: Modifier = Modifier
+) {
+    if (readings.isEmpty()) {
+        Box(modifier = modifier, contentAlignment = Alignment.Center) {
+            Text(
+                text = "No data yet",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        return
+    }
+
+    val axisIndex = 0
+    val values = readings.map { it.values.getOrElse(axisIndex) { 0f } }
+    val lineColor = MaterialTheme.colorScheme.primary
+    val gridColor = MaterialTheme.colorScheme.outlineVariant
+
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        )
+    ) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp)
+        ) {
+            if (values.size < 2) return@Canvas
+
+            val minVal = values.min()
+            val maxVal = values.max()
+            val range = if (maxVal - minVal == 0f) 1f else maxVal - minVal
+            val padding = 0.1f
+            val adjustedMin = minVal - range * padding
+            val adjustedMax = maxVal + range * padding
+            val adjustedRange = adjustedMax - adjustedMin
+
+            val stepX = size.width / (values.size - 1).coerceAtLeast(1)
+
+            for (i in 0 until values.size) {
+                val x = i * stepX
+                drawLine(
+                    color = gridColor,
+                    start = Offset(x, 0f),
+                    end = Offset(x, size.height),
+                    strokeWidth = 0.5f
+                )
+            }
+
+            val path = Path()
+            values.forEachIndexed { index, value ->
+                val x = index * stepX
+                val normY = ((value - adjustedMin) / adjustedRange).coerceIn(0f, 1f)
+                val y = size.height - normY * size.height
+                if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
+            }
+
+            drawPath(
+                path = path,
+                color = lineColor,
+                style = Stroke(
+                    width = 2.5.dp.toPx(),
+                    cap = StrokeCap.Round,
+                    join = StrokeJoin.Round
+                )
+            )
+        }
+    }
+}
+
+private fun formatLargeValue(value: Float): String {
+    return when {
+        value >= 10000 -> String.format("%.0f", value)
+        value >= 1000 -> String.format("%.1f", value)
+        value >= 100 -> String.format("%.1f", value)
+        value >= 1 -> String.format("%.2f", value)
+        else -> String.format("%.3f", value)
+    }
+}
+
+private fun formatDetailValue(value: Float?): String {
+    if (value == null) return "--"
+    return formatLargeValue(value)
+}
+
+private suspend fun exportToCsv(
+    context: Context,
+    readings: List<SensorReading>,
+    sensorType: SensorType
+): android.net.Uri? = withContext(Dispatchers.IO) {
+    try {
+        val fileName = "${sensorType.name}_${System.currentTimeMillis()}.csv"
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val contentValues = ContentValues().apply {
+                put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                put(MediaStore.Downloads.MIME_TYPE, "text/csv")
+                put(MediaStore.Downloads.IS_PENDING, 1)
+            }
+
+            val uri = context.contentResolver.insert(
+                MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues
+            ) ?: return@withContext null
+
+            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                writeCsv(outputStream, readings)
+            }
+
+            contentValues.clear()
+            contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
+            context.contentResolver.update(uri, contentValues, null, null)
+            uri
+        } else {
+            val dir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS
+            )
+            dir.mkdirs()
+            val file = java.io.File(dir, fileName)
+            file.outputStream().use { outputStream ->
+                writeCsv(outputStream, readings)
+            }
+            android.net.Uri.fromFile(file)
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
+
+private fun writeCsv(outputStream: java.io.OutputStream, readings: List<SensorReading>) {
+    val writer = BufferedWriter(OutputStreamWriter(outputStream))
+    writer.write("Timestamp_ms,Value1,Value2,Value3\n")
+    readings.forEach { reading ->
+        writer.write("${reading.timestampMs},${reading.values.joinToString(",")}\n")
+    }
+    writer.flush()
+}
