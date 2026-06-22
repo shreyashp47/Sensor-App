@@ -1,0 +1,126 @@
+name: Build and Deploy AAB
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploymentType:
+        description: 'Deployment Type'
+        required: true
+        type: choice
+        options:
+          - 'internal'
+          - 'beta'
+          - 'production'
+        default: 'internal'
+      branch:
+        description: 'Branch to build (e.g., main)'
+        required: true
+        default: 'main'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4.2.2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x ./gradlew
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts', '**/gradle/libs.versions.toml', '**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Read current version from build.gradle.kts
+        id: get_version
+        run: |
+          CURRENT_VERSION_NAME=$(grep 'versionName = ' app/build.gradle.kts | sed 's/.*versionName = "\(.*\)".*/\1/')
+          CURRENT_VERSION_CODE=$(grep 'versionCode = ' app/build.gradle.kts | sed 's/.*versionCode = \(.*\)/\1/')
+
+          NEW_VERSION_CODE=$((CURRENT_VERSION_CODE + 1))
+
+          IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION_NAME"
+          MAJOR=${VERSION_PARTS[0]}
+          MINOR=${VERSION_PARTS[1]}
+          NEW_MINOR=$((MINOR + 1))
+          NEW_VERSION_NAME="$MAJOR.$(printf "%02d" $NEW_MINOR)"
+
+          echo "current_version_name=$CURRENT_VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "current_version_code=$CURRENT_VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "new_version_name=$NEW_VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "new_version_code=$NEW_VERSION_CODE" >> $GITHUB_OUTPUT
+
+          echo "Current Version: $CURRENT_VERSION_NAME ($CURRENT_VERSION_CODE)"
+          echo "New Version: $NEW_VERSION_NAME ($NEW_VERSION_CODE)"
+
+      - name: Update version in build.gradle.kts
+        run: |
+          sed -i "s/versionName = \".*\"/versionName = \"${{ steps.get_version.outputs.new_version_name }}\"/" app/build.gradle.kts
+          sed -i "s/versionCode = .*/versionCode = ${{ steps.get_version.outputs.new_version_code }}/" app/build.gradle.kts
+
+      - name: Decode and setup keystore
+        run: |
+          mkdir -p keystore_details
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > keystore_details/sensor.jks
+
+      - name: Build AAB (bundleRelease)
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/keystore_details/sensor.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew bundleRelease
+
+      - name: Rename AAB file
+        run: |
+          mv app/build/outputs/bundle/release/app-release.aab \
+             app/build/outputs/bundle/release/SensorApp-v${{ steps.get_version.outputs.new_version_name }}-release.aab
+
+      - name: Upload to Google Play Store
+        uses: r0adkll/upload-google-play@v1.1.3
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.shreyash.sensorapp
+          releaseFiles: app/build/outputs/bundle/release/SensorApp-v${{ steps.get_version.outputs.new_version_name }}-release.aab
+          track: ${{ github.event.inputs.deploymentType }}
+          status: 'completed'
+          inAppUpdatePriority: 2
+          releaseName: SensorApp v${{ steps.get_version.outputs.new_version_name }}
+          whatsNewDirectory: whatsnew/
+
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: SensorApp-AAB-v${{ steps.get_version.outputs.new_version_name }}
+          path: app/build/outputs/bundle/release/SensorApp-v${{ steps.get_version.outputs.new_version_name }}-release.aab
+
+      - name: Create Release Tag
+        if: github.event.inputs.deploymentType == 'production'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "v${{ steps.get_version.outputs.new_version_name }}" -m "Release v${{ steps.get_version.outputs.new_version_name }}"
+          git push origin "v${{ steps.get_version.outputs.new_version_name }}"
+
+      - name: Update version in repository
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add app/build.gradle.kts
+          git commit -m "Bump version to ${{ steps.get_version.outputs.new_version_name }} (${{ steps.get_version.outputs.new_version_code }})" || exit 0
+          git push origin ${{ github.event.inputs.branch }}

@@ -1,8 +1,17 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+}
+
+val keystorePropertiesFile = rootProject.file("keystore_details/keystore.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        load(keystorePropertiesFile.inputStream())
+    }
 }
 
 android {
@@ -19,10 +28,20 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("../release.keystore")
-            storePassword = "SensorApp123"
-            keyAlias = "sensorapp"
-            keyPassword = "SensorApp123"
+            storeFile = file(
+                System.getenv("ANDROID_KEYSTORE_PATH")
+                    ?: keystoreProperties.getProperty("storeFile")
+                    ?: "../release.keystore"
+            )
+            storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                ?: keystoreProperties.getProperty("storePassword")
+                ?: "SensorApp123"
+            keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                ?: keystoreProperties.getProperty("keyAlias")
+                ?: "sensorapp"
+            keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+                ?: keystoreProperties.getProperty("keyPassword")
+                ?: "SensorApp123"
         }
     }
 

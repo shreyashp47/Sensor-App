@@ -1,0 +1,75 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      versionName:
+        description: 'Version Name (e.g., 1.5)'
+        required: true
+        default: '1.5'
+      versionCode:
+        description: 'Version Code (e.g., 5)'
+        required: true
+        default: '5'
+      branch:
+        description: 'Branch to build (e.g., main)'
+        required: true
+        default: 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4.2.2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x ./gradlew
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts', '**/gradle/libs.versions.toml', '**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Inject versionName and versionCode
+        run: |
+          sed -i "s/versionName = \".*\"/versionName = \"${{ github.event.inputs.versionName }}\"/" app/build.gradle.kts
+          sed -i "s/versionCode = .*/versionCode = ${{ github.event.inputs.versionCode }}/" app/build.gradle.kts
+
+      - name: Decode and setup keystore
+        run: |
+          mkdir -p keystore_details
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > keystore_details/sensor.jks
+
+      - name: Build APK (assembleRelease)
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/keystore_details/sensor.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
+
+      - name: Rename APK file
+        run: |
+          mv app/build/outputs/apk/release/app-release.apk \
+             app/build/outputs/apk/release/SensorApp-v${{ github.event.inputs.versionName }}-release.apk
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: SensorApp-APK-v${{ github.event.inputs.versionName }}
+          path: app/build/outputs/apk/release/SensorApp-v${{ github.event.inputs.versionName }}-release.apk
