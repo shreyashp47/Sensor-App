@@ -58,7 +58,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.clip
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -199,7 +202,7 @@ fun SensorDetailScreen(
                 sensorType = sensorType,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp)
+                    .height(260.dp)
             )
 
             Spacer(Modifier.height(12.dp))
@@ -367,6 +370,7 @@ fun LiveLineChart(
     val axisIndex = 0
     val values = readings.map { it.values.getOrElse(axisIndex) { 0f } }
     val lineColor = MaterialTheme.colorScheme.primary
+    val fillColor = MaterialTheme.colorScheme.primary
     val gridColor = MaterialTheme.colorScheme.outlineVariant
     val crosshairColor = MaterialTheme.colorScheme.tertiary
 
@@ -377,12 +381,13 @@ fun LiveLineChart(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        )
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp)
+                .padding(start = 8.dp, top = 24.dp, end = 8.dp, bottom = 24.dp)
                 .pointerInput(values) {
                     detectTapGestures { offset ->
                         if (values.size < 2) return@detectTapGestures
@@ -405,6 +410,11 @@ fun LiveLineChart(
 
             val stepX = size.width / (values.size - 1).coerceAtLeast(1)
 
+            fun yForValue(value: Float): Float {
+                val normY = ((value - adjustedMin) / adjustedRange).coerceIn(0f, 1f)
+                return size.height - normY * size.height
+            }
+
             for (i in 0 until values.size) {
                 val x = i * stepX
                 drawLine(
@@ -415,16 +425,33 @@ fun LiveLineChart(
                 )
             }
 
-            val path = Path()
+            val linePath = Path()
+            val fillPath = Path()
             values.forEachIndexed { index, value ->
                 val x = index * stepX
-                val normY = ((value - adjustedMin) / adjustedRange).coerceIn(0f, 1f)
-                val y = size.height - normY * size.height
-                if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
+                val y = yForValue(value)
+                if (index == 0) {
+                    linePath.moveTo(x, y)
+                    fillPath.moveTo(x, size.height)
+                    fillPath.lineTo(x, y)
+                } else {
+                    linePath.lineTo(x, y)
+                    fillPath.lineTo(x, y)
+                }
             }
+            fillPath.lineTo((values.size - 1) * stepX, size.height)
+            fillPath.close()
 
             drawPath(
-                path = path,
+                path = fillPath,
+                brush = Brush.verticalGradient(
+                    colors = listOf(fillColor.copy(alpha = 0.2f), fillColor.copy(alpha = 0.02f)),
+                    endY = size.height
+                )
+            )
+
+            drawPath(
+                path = linePath,
                 color = lineColor,
                 style = Stroke(
                     width = 2.5.dp.toPx(),
@@ -433,11 +460,31 @@ fun LiveLineChart(
                 )
             )
 
+            val labelPaint = android.graphics.Paint().apply {
+                color = android.graphics.Color.GRAY
+                textSize = 22f
+                textAlign = android.graphics.Paint.Align.RIGHT
+                isAntiAlias = true
+            }
+
+            drawContext.canvas.nativeCanvas.drawText(
+                formatLargeValue(adjustedMax),
+                -4.dp.toPx(),
+                0f,
+                labelPaint
+            )
+
+            drawContext.canvas.nativeCanvas.drawText(
+                formatLargeValue(adjustedMin),
+                -4.dp.toPx(),
+                size.height,
+                labelPaint
+            )
+
             if (touchIndex in values.indices && values.size >= 2) {
                 val x = touchIndex * stepX
                 val value = values[touchIndex]
-                val normY = ((value - adjustedMin) / adjustedRange).coerceIn(0f, 1f)
-                val y = size.height - normY * size.height
+                val y = yForValue(value)
                 val point = Offset(x, y)
 
                 drawLine(
@@ -450,6 +497,11 @@ fun LiveLineChart(
                 drawCircle(
                     color = crosshairColor,
                     radius = 5.dp.toPx(),
+                    center = point
+                )
+                drawCircle(
+                    color = crosshairColor.copy(alpha = 0.3f),
+                    radius = 10.dp.toPx(),
                     center = point
                 )
 
@@ -470,36 +522,29 @@ private fun DrawScope.drawCrosshairTooltip(value: Float, x: Float, y: Float) {
         textSize = 28f
         textAlign = android.graphics.Paint.Align.CENTER
         isAntiAlias = true
-    }
-    val bgPaint = android.graphics.Paint().apply {
-        color = android.graphics.Color.argb(200, 60, 60, 60)
-        isAntiAlias = true
+        isFakeBoldText = true
     }
 
     val textWidth = paint.measureText(text)
-    val padding = 20f
-    val rectLeft = x - textWidth / 2 - padding
-    val rectTop = y - paint.textSize - padding * 2
-    val rectRight = x + textWidth / 2 + padding
-    val rectBottom = y - 8.dp.toPx()
-
-    val adjustedRectLeft = rectLeft.coerceAtLeast(0f)
-    val adjustedRectRight = rectRight.coerceAtMost(size.width)
+    val padding = 16f
+    val tooltipHeight = paint.textSize + padding * 2
+    val rectWidth = textWidth + padding * 2
+    val rectLeft = (x - rectWidth / 2).coerceIn(0f, size.width - rectWidth)
+    val rectTop = (y - tooltipHeight - 16.dp.toPx()).coerceAtLeast(0f)
+    val rectBottom = rectTop + tooltipHeight
+    val rectRight = rectLeft + rectWidth
 
     drawRoundRect(
-        color = Color(60, 60, 60, 200),
-        topLeft = Offset(adjustedRectLeft, rectTop),
-        size = androidx.compose.ui.geometry.Size(
-            adjustedRectRight - adjustedRectLeft,
-            rectBottom - rectTop
-        ),
-        cornerRadius = androidx.compose.ui.geometry.CornerRadius(12f)
+        color = Color(50, 50, 55, 230),
+        topLeft = Offset(rectLeft, rectTop),
+        size = Size(rectWidth, tooltipHeight),
+        cornerRadius = CornerRadius(10f, 10f)
     )
 
     drawContext.canvas.nativeCanvas.drawText(
         text,
         x,
-        rectBottom - padding,
+        rectTop + padding + paint.textSize / 2 + 2f,
         paint
     )
 }
