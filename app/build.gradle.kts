@@ -7,14 +7,14 @@ plugins {
 
 android {
     namespace = "com.shreyash.sensorapp"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.shreyash.sensorapp"
         minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 36
+        versionCode = 3
+        versionName = "1.3"
     }
 
     signingConfigs {
