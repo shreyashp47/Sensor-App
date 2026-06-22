@@ -1,17 +1,12 @@
 # SensorApp
 
-Real-time Android sensor monitor. Displays live readings from all device sensors with animated values, scrolling charts, CSV export, and historical logging.
+Real-time Android sensor monitor. Live readings with scrolling charts, session-based logging, CSV export, and history tracking.
+
+**Package:** `com.shreyash.sensorapp` · **Dark mode only**
 
 ## Tech Stack
 
-- **Language:** Kotlin
-- **UI:** Jetpack Compose (Material 3)
-- **Architecture:** Clean Architecture (data / domain / presentation)
-- **DI:** Hilt
-- **Async:** Kotlin Coroutines + Flow
-- **Local DB:** Room
-- **Navigation:** Compose Navigation
-- **Build:** Gradle Version Catalog + KSP
+Kotlin · Jetpack Compose (Material 3) · Clean Architecture · Hilt · Room · Coroutines + Flow · Compose Navigation · Gradle Version Catalog + KSP
 
 ## Sensors Supported
 
@@ -22,7 +17,7 @@ Real-time Android sensor monitor. Displays live readings from all device sensors
 | Magnetometer | 3-axis | X, Y, Z (µT) |
 | Light | 1-axis | lux |
 | Proximity | 1-axis | cm |
-| Barometer (Pressure) | 1-axis | hPa |
+| Barometer | 1-axis | hPa |
 | Step Counter | 1-axis | steps |
 | Gravity | 3-axis | X, Y, Z (m/s²) |
 | Linear Acceleration | 3-axis | X, Y, Z (m/s²) |
@@ -32,10 +27,10 @@ Real-time Android sensor monitor. Displays live readings from all device sensors
 
 | Screen | Description |
 |--------|-------------|
-| **Dashboard** | Grid of all sensor cards. Available sensors show live values with a pulsing green LIVE dot. Unavailable sensors are greyed with a "Not available" chip. Tapping an unavailable sensor opens a bottom sheet explanation. |
-| **Sensor Detail** | Large animated axis values with units, a live scrolling line chart (last 60 readings, Canvas-drawn), pulsing LIVE indicator, logging toggle, and CSV export to Downloads. |
-| **History** | Lazy list of logged readings with filter chips by sensor type. "Clear older than 24h" action. |
-| **Settings** | Polling rate selector (FASTEST / GAME / UI / NORMAL) and Room database stats. |
+| **Dashboard** | 2-column grid grouped by category (Motion, Position, Environmental, Activity). Each sensor is a card with a colored icon circle, name, and live value. Unavailable sensors are dimmed with "Not available" — tap opens a bottom sheet explanation. |
+| **Sensor Detail** | Live axis values with units, a Canvas-drawn line chart (last 60 readings) with gradient fill and Y-axis labels. Tap the chart for a crosshair + value tooltip. Start/Stop Logging toggles Room persistence. Export CSV button saves to Downloads. |
+| **History** | One card per logging session (not individual readings) showing sensor icon, name, duration, and date. Search by sensor name, sort by newest/oldest/longest/shortest. Clear all with confirmation dialog. |
+| **Settings** | Polling rate (FASTEST/GAME/UI/NORMAL), database row count, and credits (Shreyash Pattewar — Mobile & AI Developer). |
 
 ## Previews
 
@@ -45,10 +40,13 @@ Real-time Android sensor monitor. Displays live readings from all device sensors
 
 ## Key Features
 
-- **Just-in-time permissions** — never requested at launch. Step Counter asks for `ACTIVITY_RECOGNITION` only when tapped (API 29+).
-- **Lifecycle-aware** — sensor listeners are unregistered on `ON_STOP` and re-registered on `ON_START` to save battery.
-- **Offline-first** — all readings logged to Room. CSV export via MediaStore (API 29+) with pre-Q fallback.
-- **Unavailable sensor handling** — every sensor type is shown regardless of availability. Unavailable cards are greyed out with a red chip and show a bottom sheet explaining the missing sensor.
+- **Just-in-time permissions** — never at launch. Step Counter requests `ACTIVITY_RECOGNITION` only on tap (API 29+).
+- **Lifecycle-aware** — sensor listeners unregistered on `ON_STOP`, re-registered on `ON_START`.
+- **Session logging** — each Start→Stop creates a `LogSession` in Room. Navigating back while logging ends the session automatically.
+- **In-memory chart** — last 60 readings buffered in memory; chart works even when logging is off.
+- **CSV export** — uses `MediaStore.Downloads` (API 29+) with `Environment` fallback (pre-Q).
+- **Touch-to-inspect chart** — tap any point on the line chart for crosshair + exact value tooltip.
+- **Unavailable sensor handling** — every sensor shown regardless; unavailable cards are dimmed with explanation bottom sheet.
 
 ## Build
 
