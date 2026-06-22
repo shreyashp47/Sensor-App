@@ -1,75 +1,75 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 720" width="360" height="720">
-  <rect width="360" height="720" fill="#f0f0f0" rx="20"/>
-  <rect width="360" height="48" fill="#f0f0f0"/>
-  <text x="180" y="32" font-family="sans-serif" font-size="18" text-anchor="middle" fill="#333" font-weight="bold">SensorApp</text>
-  <text x="310" y="32" font-family="sans-serif" font-size="16" fill="#555">📋</text>
-  <text x="335" y="32" font-family="sans-serif" font-size="16" fill="#555">⚙</text>
+  <rect width="360" height="720" fill="#1A1C1E" rx="20"/>
+  <rect width="360" height="48" fill="#1A1C1E"/>
+  <text x="180" y="32" font-family="sans-serif" font-size="18" text-anchor="middle" fill="#E2E2E6" font-weight="bold">SensorApp</text>
+  <text x="310" y="32" font-family="sans-serif" font-size="16" fill="#8BCBFF">📋</text>
+  <text x="335" y="32" font-family="sans-serif" font-size="16" fill="#8BCBFF">⚙</text>
 
-  <!-- Motion Section -->
-  <rect x="4" y="54" width="4" height="14" rx="2" fill="#006494"/>
-  <text x="16" y="65" font-family="sans-serif" font-size="12" fill="#006494" font-weight="bold">Motion</text>
+  <!-- Motion -->
+  <rect x="4" y="54" width="4" height="14" rx="2" fill="#8BCBFF"/>
+  <text x="16" y="65" font-family="sans-serif" font-size="12" fill="#8BCBFF" font-weight="bold">Motion</text>
 
-  <!-- Card 1: Accelerometer -->
-  <rect x="8" y="74" width="164" height="100" rx="14" fill="white" stroke="#e8e8e8" stroke-width="1"/>
-  <circle cx="90" cy="104" r="24" fill="#C9E6FF"/>
-  <text x="90" y="109" font-family="sans-serif" font-size="14" fill="#001E30" text-anchor="middle">📊</text>
-  <text x="90" y="140" font-family="sans-serif" font-size="12" fill="#333" text-anchor="middle" font-weight="500">Accelerometer</text>
-  <text x="90" y="157" font-family="sans-serif" font-size="10" fill="#888" text-anchor="middle">9.812 m/s²</text>
+  <!-- Card 1 -->
+  <rect x="8" y="74" width="164" height="100" rx="14" fill="#2A2D30" stroke="none"/>
+  <circle cx="90" cy="104" r="24" fill="#004B6E"/>
+  <text x="90" y="109" font-family="sans-serif" font-size="14" fill="#C9E6FF" text-anchor="middle">📊</text>
+  <text x="90" y="140" font-family="sans-serif" font-size="12" fill="#E2E2E6" text-anchor="middle" font-weight="500">Accelerometer</text>
+  <text x="90" y="157" font-family="sans-serif" font-size="10" fill="#9EA" text-anchor="middle">9.8 m/s²</text>
 
-  <!-- Card 2: Gyroscope -->
-  <rect x="184" y="74" width="164" height="100" rx="14" fill="white" stroke="#e8e8e8" stroke-width="1"/>
-  <circle cx="266" cy="104" r="24" fill="#C9E6FF"/>
-  <text x="266" y="109" font-family="sans-serif" font-size="14" fill="#001E30" text-anchor="middle">🔄</text>
-  <text x="266" y="140" font-family="sans-serif" font-size="12" fill="#333" text-anchor="middle" font-weight="500">Gyroscope</text>
-  <text x="266" y="157" font-family="sans-serif" font-size="10" fill="#888" text-anchor="middle">0.012 °/s</text>
+  <!-- Card 2 -->
+  <rect x="184" y="74" width="164" height="100" rx="14" fill="#2A2D30" stroke="none"/>
+  <circle cx="266" cy="104" r="24" fill="#004B6E"/>
+  <text x="266" y="109" font-family="sans-serif" font-size="14" fill="#C9E6FF" text-anchor="middle">🔄</text>
+  <text x="266" y="140" font-family="sans-serif" font-size="12" fill="#E2E2E6" text-anchor="middle" font-weight="500">Gyroscope</text>
+  <text x="266" y="157" font-family="sans-serif" font-size="10" fill="#9EA" text-anchor="middle">0.0 °/s</text>
 
-  <!-- Card 3: Linear Acceleration -->
-  <rect x="8" y="182" width="164" height="100" rx="14" fill="white" stroke="#e8e8e8" stroke-width="1"/>
-  <circle cx="90" cy="212" r="24" fill="#C9E6FF"/>
-  <text x="90" y="217" font-family="sans-serif" font-size="14" fill="#001E30" text-anchor="middle">↔</text>
-  <text x="90" y="248" font-family="sans-serif" font-size="12" fill="#333" text-anchor="middle" font-weight="500">Linear Accel.</text>
-  <text x="90" y="265" font-family="sans-serif" font-size="10" fill="#888" text-anchor="middle">0.023 m/s²</text>
+  <!-- Card 3 -->
+  <rect x="8" y="182" width="164" height="100" rx="14" fill="#2A2D30" stroke="none"/>
+  <circle cx="90" cy="212" r="24" fill="#004B6E"/>
+  <text x="90" y="217" font-family="sans-serif" font-size="14" fill="#C9E6FF" text-anchor="middle">↔</text>
+  <text x="90" y="248" font-family="sans-serif" font-size="12" fill="#E2E2E6" text-anchor="middle" font-weight="500">Linear Accel.</text>
+  <text x="90" y="265" font-family="sans-serif" font-size="10" fill="#9EA" text-anchor="middle">0.0 m/s²</text>
 
-  <!-- Position Section -->
-  <rect x="4" y="292" width="4" height="14" rx="2" fill="#006494"/>
-  <text x="16" y="303" font-family="sans-serif" font-size="12" fill="#006494" font-weight="bold">Position</text>
+  <!-- Position -->
+  <rect x="4" y="292" width="4" height="14" rx="2" fill="#8BCBFF"/>
+  <text x="16" y="303" font-family="sans-serif" font-size="12" fill="#8BCBFF" font-weight="bold">Position</text>
 
-  <!-- Card 4: Magnetometer -->
-  <rect x="8" y="312" width="164" height="100" rx="14" fill="white" stroke="#e8e8e8" stroke-width="1"/>
-  <circle cx="90" cy="342" r="24" fill="#C9E6FF"/>
-  <text x="90" y="347" font-family="sans-serif" font-size="14" fill="#001E30" text-anchor="middle">🧭</text>
-  <text x="90" y="378" font-family="sans-serif" font-size="12" fill="#333" text-anchor="middle" font-weight="500">Magnetometer</text>
-  <text x="90" y="395" font-family="sans-serif" font-size="10" fill="#888" text-anchor="middle">45.23 µT</text>
+  <!-- Card 4 -->
+  <rect x="8" y="312" width="164" height="100" rx="14" fill="#2A2D30" stroke="none"/>
+  <circle cx="90" cy="342" r="24" fill="#004B6E"/>
+  <text x="90" y="347" font-family="sans-serif" font-size="14" fill="#C9E6FF" text-anchor="middle">🧭</text>
+  <text x="90" y="378" font-family="sans-serif" font-size="12" fill="#E2E2E6" text-anchor="middle" font-weight="500">Magnetometer</text>
+  <text x="90" y="395" font-family="sans-serif" font-size="10" fill="#9EA" text-anchor="middle">45.2 µT</text>
 
-  <!-- Card 5: Gravity -->
-  <rect x="184" y="312" width="164" height="100" rx="14" fill="white" stroke="#e8e8e8" stroke-width="1"/>
-  <circle cx="266" cy="342" r="24" fill="#C9E6FF"/>
-  <text x="266" y="347" font-family="sans-serif" font-size="14" fill="#001E30" text-anchor="middle">↓</text>
-  <text x="266" y="378" font-family="sans-serif" font-size="12" fill="#333" text-anchor="middle" font-weight="500">Gravity</text>
-  <text x="266" y="395" font-family="sans-serif" font-size="10" fill="#888" text-anchor="middle">9.801 m/s²</text>
+  <!-- Card 5 -->
+  <rect x="184" y="312" width="164" height="100" rx="14" fill="#2A2D30" stroke="none"/>
+  <circle cx="266" cy="342" r="24" fill="#004B6E"/>
+  <text x="266" y="347" font-family="sans-serif" font-size="14" fill="#C9E6FF" text-anchor="middle">↓</text>
+  <text x="266" y="378" font-family="sans-serif" font-size="12" fill="#E2E2E6" text-anchor="middle" font-weight="500">Gravity</text>
+  <text x="266" y="395" font-family="sans-serif" font-size="10" fill="#9EA" text-anchor="middle">9.8 m/s²</text>
 
-  <!-- Card 6: Rotation Vector -->
-  <rect x="8" y="420" width="164" height="100" rx="14" fill="white" stroke="#e8e8e8" stroke-width="1"/>
-  <circle cx="90" cy="450" r="24" fill="#C9E6FF"/>
-  <text x="90" y="455" font-family="sans-serif" font-size="14" fill="#001E30" text-anchor="middle">♻</text>
-  <text x="90" y="486" font-family="sans-serif" font-size="12" fill="#333" text-anchor="middle" font-weight="500">Rotation Vector</text>
-  <text x="90" y="503" font-family="sans-serif" font-size="10" fill="#888" text-anchor="middle">0.891</text>
+  <!-- Card 6 -->
+  <rect x="8" y="420" width="164" height="100" rx="14" fill="#2A2D30" stroke="none"/>
+  <circle cx="90" cy="450" r="24" fill="#004B6E"/>
+  <text x="90" y="455" font-family="sans-serif" font-size="14" fill="#C9E6FF" text-anchor="middle">♻</text>
+  <text x="90" y="486" font-family="sans-serif" font-size="12" fill="#E2E2E6" text-anchor="middle" font-weight="500">Rotation Vector</text>
+  <text x="90" y="503" font-family="sans-serif" font-size="10" fill="#9EA" text-anchor="middle">0.9</text>
 
-  <!-- Environmental Section -->
-  <rect x="4" y="530" width="4" height="14" rx="2" fill="#006494"/>
-  <text x="16" y="541" font-family="sans-serif" font-size="12" fill="#006494" font-weight="bold">Environmental</text>
+  <!-- Environmental -->
+  <rect x="4" y="530" width="4" height="14" rx="2" fill="#8BCBFF"/>
+  <text x="16" y="541" font-family="sans-serif" font-size="12" fill="#8BCBFF" font-weight="bold">Environmental</text>
 
-  <!-- Card 7: Light -->
-  <rect x="8" y="550" width="164" height="100" rx="14" fill="white" stroke="#e8e8e8" stroke-width="1"/>
-  <circle cx="90" cy="580" r="24" fill="#C9E6FF"/>
-  <text x="90" y="585" font-family="sans-serif" font-size="14" fill="#001E30" text-anchor="middle">💡</text>
-  <text x="90" y="616" font-family="sans-serif" font-size="12" fill="#333" text-anchor="middle" font-weight="500">Light</text>
-  <text x="90" y="633" font-family="sans-serif" font-size="10" fill="#888" text-anchor="middle">342.0 lx</text>
+  <!-- Card 7 -->
+  <rect x="8" y="550" width="164" height="100" rx="14" fill="#2A2D30" stroke="none"/>
+  <circle cx="90" cy="580" r="24" fill="#004B6E"/>
+  <text x="90" y="585" font-family="sans-serif" font-size="14" fill="#C9E6FF" text-anchor="middle">💡</text>
+  <text x="90" y="616" font-family="sans-serif" font-size="12" fill="#E2E2E6" text-anchor="middle" font-weight="500">Light</text>
+  <text x="90" y="633" font-family="sans-serif" font-size="10" fill="#9EA" text-anchor="middle">342.0 lx</text>
 
-  <!-- Card 8: Proximity (unavailable) -->
-  <rect x="184" y="550" width="164" height="100" rx="14" fill="white" stroke="#f0f0f0" stroke-width="1"/>
-  <circle cx="266" cy="580" r="24" fill="#f0f0f0"/>
-  <text x="266" y="585" font-family="sans-serif" font-size="14" fill="#ccc" text-anchor="middle">📡</text>
-  <text x="266" y="616" font-family="sans-serif" font-size="12" fill="#ccc" text-anchor="middle" font-weight="500">Proximity</text>
-  <text x="266" y="633" font-family="sans-serif" font-size="9" fill="#ddd" text-anchor="middle">Not available</text>
+  <!-- Card 8 (unavailable) -->
+  <rect x="184" y="550" width="164" height="100" rx="14" fill="#222" stroke="none"/>
+  <circle cx="266" cy="580" r="24" fill="#333"/>
+  <text x="266" y="585" font-family="sans-serif" font-size="14" fill="#666" text-anchor="middle">📡</text>
+  <text x="266" y="616" font-family="sans-serif" font-size="12" fill="#666" text-anchor="middle" font-weight="500">Proximity</text>
+  <text x="266" y="633" font-family="sans-serif" font-size="9" fill="#555" text-anchor="middle">Not available</text>
 </svg>
