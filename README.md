@@ -44,7 +44,7 @@ Kotlin · Jetpack Compose (Material 3) · Clean Architecture · Hilt · Room · 
 
 | Dashboard | Sensor Detail | History | Settings |
 |-----------|--------------|---------|----------|
-| ![](previews/dashboard.svg) | ![](previews/detail.svg) | ![](previews/history.svg) | ![](previews/settings.svg) |
+| ![](previews/dashboard.png) | ![](previews/detail.png) | ![](previews/history.png) | ![](previews/settings.png) |
 
 ## Key Features
 
@@ -55,6 +55,16 @@ Kotlin · Jetpack Compose (Material 3) · Clean Architecture · Hilt · Room · 
 - **CSV export** — uses `MediaStore.Downloads` (API 29+) with `Environment` fallback (pre-Q).
 - **Touch-to-inspect chart** — tap any point on the line chart for crosshair + exact value tooltip.
 - **Unavailable sensor handling** — every sensor shown regardless; unavailable cards are dimmed with explanation bottom sheet.
+
+## Open Testing
+
+This app is in open testing on Google Play. To help me get it to production:
+
+1. **Join the tester group:** Send a blank email to [testers-community@googlegroups.com](mailto:testers-community@googlegroups.com)
+2. **Install the app:** Once approved, install from the [Play Store listing](https://play.google.com/store/apps/details?id=com.shreyash.sensorapp)
+3. **Report issues:** Open a [GitHub issue](https://github.com/shreyashp47/Sensor-App/issues)
+
+Your feedback helps shape the production release!
 
 ## Build
 
