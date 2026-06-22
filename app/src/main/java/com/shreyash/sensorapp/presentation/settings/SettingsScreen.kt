@@ -37,9 +37,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -190,6 +192,16 @@ fun SettingsScreen(
             }
 
             Spacer(Modifier.height(32.dp))
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewSettingsSection() {
+    SensorAppTheme {
+        SettingsSection(title = "Sample Section") {
+            Text("Content here")
         }
     }
 }

@@ -46,11 +46,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shreyash.sensorapp.domain.model.LogSession
+import com.shreyash.sensorapp.domain.model.SensorType
 import com.shreyash.sensorapp.presentation.sensorIcon
+import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -186,6 +189,23 @@ fun HistoryScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewSessionItem() {
+    SensorAppTheme {
+        SessionItem(
+            session = LogSession(
+                id = 1,
+                sensorType = SensorType.ACCELEROMETER,
+                startTimeMs = System.currentTimeMillis() - 154000,
+                endTimeMs = System.currentTimeMillis(),
+                readingCount = 120,
+                summary = "2m 34s log"
+            )
+        )
     }
 }
 

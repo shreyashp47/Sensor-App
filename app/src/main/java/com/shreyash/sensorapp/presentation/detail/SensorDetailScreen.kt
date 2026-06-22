@@ -74,6 +74,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -82,6 +83,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shreyash.sensorapp.domain.model.SensorReading
 import com.shreyash.sensorapp.domain.model.SensorType
+import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
 import com.shreyash.sensorapp.presentation.theme.SensorGreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -547,6 +549,38 @@ private fun DrawScope.drawCrosshairTooltip(value: Float, x: Float, y: Float) {
         rectTop + padding + paint.textSize / 2 + 2f,
         paint
     )
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewLiveIndicator() {
+    SensorAppTheme {
+        LiveIndicator()
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewLiveValueDisplay() {
+    SensorAppTheme {
+        LiveValueDisplay(
+            reading = SensorReading(
+                sensorType = SensorType.ACCELEROMETER,
+                values = listOf(9.8f, 0.0f, 0.0f),
+                accuracy = 3,
+                timestampMs = System.currentTimeMillis()
+            ),
+            sensorType = SensorType.ACCELEROMETER
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewAxisValue() {
+    SensorAppTheme {
+        AxisValue(label = "X", value = 9.8f, unit = "m/s²")
+    }
 }
 
 private fun formatLargeValue(value: Float): String {

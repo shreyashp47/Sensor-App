@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,6 +59,7 @@ import com.shreyash.sensorapp.domain.model.SensorType
 import com.shreyash.sensorapp.presentation.permission.PermissionDialog
 import com.shreyash.sensorapp.presentation.permission.rememberPermissionHandler
 import com.shreyash.sensorapp.presentation.sensorIcon
+import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -132,6 +134,34 @@ fun DashboardScreen(
             sensorType = permissionHandler.pendingSensorType,
             onDismiss = permissionHandler.onDismissDialog,
             onConfirm = permissionHandler.onConfirmDialog
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewSensorGridItemAvailable() {
+    SensorAppTheme {
+        SensorGridItem(
+            state = SensorState(
+                type = SensorType.ACCELEROMETER,
+                availability = SensorAvailability.Available
+            ),
+            onClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewSensorGridItemUnavailable() {
+    SensorAppTheme {
+        SensorGridItem(
+            state = SensorState(
+                type = SensorType.PROXIMITY,
+                availability = SensorAvailability.Unavailable
+            ),
+            onClick = {}
         )
     }
 }
