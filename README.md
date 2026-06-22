@@ -60,7 +60,7 @@ Kotlin · Jetpack Compose (Material 3) · Clean Architecture · Hilt · Room · 
 
 This app is in open testing on Google Play. To help me get it to production:
 
-1. **Join the tester group:** Send a blank email to [testers-community@googlegroups.com](mailto:testers-community@googlegroups.com)
+1. **Join the tester group:** [testers-community@googlegroups.com](https://groups.google.com/g/testers-community)
 2. **Install the app:** Once approved, install from the [Play Store listing](https://play.google.com/store/apps/details?id=com.shreyash.sensorapp)
 3. **Report issues:** Open a [GitHub issue](https://github.com/shreyashp47/Sensor-App/issues)
 
