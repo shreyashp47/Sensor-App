@@ -1,67 +1,88 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 720" width="360" height="720">
   <rect width="360" height="720" fill="#f0f0f0" rx="20"/>
-  <!-- Status bar -->
-  <rect width="360" height="40" fill="#f0f0f0"/>
-  <text x="180" y="28" font-family="sans-serif" font-size="18" text-anchor="middle" fill="#333" font-weight="bold">SensorApp</text>
-  <text x="330" y="28" font-family="sans-serif" font-size="16" fill="#555">⚙</text>
-  
-  <!-- Sensor cards grid -->
-  <!-- Row 1 -->
-  <!-- Accelerometer (available) -->
-  <rect x="12" y="50" width="168" height="120" rx="12" fill="white" stroke="#ddd" stroke-width="1"/>
-  <text x="24" y="78" font-family="sans-serif" font-size="10" fill="#666">📱 Accelerometer</text>
-  <circle cx="24" cy="102" r="5" fill="#4CAF50" opacity="0.7"/>
-  <circle cx="24" cy="102" r="5" fill="#4CAF50" opacity="0.3"/>
-  <text x="36" y="106" font-family="sans-serif" font-size="22" fill="#333" font-weight="bold">9.812</text>
-  <text x="24" y="130" font-family="sans-serif" font-size="10" fill="#888">X: 9.812 Y: 0.012 Z: 0.034</text>
-  <text x="24" y="146" font-family="sans-serif" font-size="9" fill="#999">m/s²</text>
-  <rect x="120" y="66" width="52" height="16" rx="8" fill="#E8F5E9"/><text x="146" y="78" font-family="sans-serif" font-size="8" fill="#4CAF50" text-anchor="middle" font-weight="bold">LIVE</text>
-  
-  <!-- Gyroscope (available) -->
-  <rect x="192" y="50" width="156" height="120" rx="12" fill="white" stroke="#ddd" stroke-width="1"/>
-  <text x="204" y="78" font-family="sans-serif" font-size="10" fill="#666">🌀 Gyroscope</text>
-  <text x="204" y="106" font-family="sans-serif" font-size="22" fill="#333" font-weight="bold">0.012</text>
-  <text x="204" y="130" font-family="sans-serif" font-size="10" fill="#888">X: 0.012 Y: 0.003 Z: 0.001</text>
-  <text x="204" y="146" font-family="sans-serif" font-size="9" fill="#999">°/s</text>
-  
-  <!-- Magnetometer (available) -->
-  <rect x="12" y="180" width="168" height="120" rx="12" fill="white" stroke="#ddd" stroke-width="1"/>
-  <text x="24" y="208" font-family="sans-serif" font-size="10" fill="#666">🧲 Magnetometer</text>
-  <text x="24" y="236" font-family="sans-serif" font-size="22" fill="#333" font-weight="bold">45.23</text>
-  <text x="24" y="260" font-family="sans-serif" font-size="10" fill="#888">X: 45.23 Y: 12.45 Z: 8.12</text>
-  <text x="24" y="276" font-family="sans-serif" font-size="9" fill="#999">µT</text>
-  
-  <!-- Light (available) -->
-  <rect x="192" y="180" width="156" height="120" rx="12" fill="white" stroke="#ddd" stroke-width="1"/>
-  <text x="204" y="208" font-family="sans-serif" font-size="10" fill="#666">☀ Light</text>
-  <text x="204" y="236" font-family="sans-serif" font-size="22" fill="#333" font-weight="bold">342.0</text>
-  <text x="204" y="260" font-family="sans-serif" font-size="10" fill="#888">lux</text>
-  
-  <!-- Proximity (unavailable) -->
-  <rect x="12" y="310" width="168" height="120" rx="12" fill="#f5f5f5" stroke="#eee" stroke-width="1" opacity="0.5"/>
-  <text x="24" y="338" font-family="sans-serif" font-size="10" fill="#bbb">📏 Proximity</text>
-  <rect x="24" y="348" width="80" height="16" rx="4" fill="#FFCDD2"/>
-  <text x="64" y="360" font-family="sans-serif" font-size="8" fill="#B71C1C" text-anchor="middle" font-weight="bold">Not available</text>
-  
-  <!-- Barometer (unavailable) -->
-  <rect x="192" y="310" width="156" height="120" rx="12" fill="#f5f5f5" stroke="#eee" stroke-width="1" opacity="0.5"/>
-  <text x="204" y="338" font-family="sans-serif" font-size="10" fill="#bbb">🌡 Barometer</text>
-  <rect x="204" y="348" width="80" height="16" rx="4" fill="#FFCDD2"/>
-  <text x="244" y="360" font-family="sans-serif" font-size="8" fill="#B71C1C" text-anchor="middle" font-weight="bold">Not available</text>
-  
-  <!-- Step Counter (available) -->
-  <rect x="12" y="440" width="168" height="120" rx="12" fill="white" stroke="#ddd" stroke-width="1"/>
-  <text x="24" y="468" font-family="sans-serif" font-size="10" fill="#666">👣 Step Counter</text>
-  <text x="24" y="496" font-family="sans-serif" font-size="22" fill="#333" font-weight="bold">1,284</text>
-  <text x="24" y="520" font-family="sans-serif" font-size="10" fill="#888">steps</text>
-  
-  <!-- Gravity (available) -->
-  <rect x="192" y="440" width="156" height="120" rx="12" fill="white" stroke="#ddd" stroke-width="1"/>
-  <text x="204" y="468" font-family="sans-serif" font-size="10" fill="#666">🌍 Gravity</text>
-  <text x="204" y="496" font-family="sans-serif" font-size="22" fill="#333" font-weight="bold">9.801</text>
-  <text x="204" y="520" font-family="sans-serif" font-size="10" fill="#888">m/s²</text>
-  
-  <!-- FAB -->
-  <circle cx="324" cy="680" r="28" fill="#006494"/>
-  <text x="324" y="686" font-family="sans-serif" font-size="18" fill="white" text-anchor="middle">▶</text>
+  <rect width="360" height="48" fill="#f0f0f0"/>
+  <text x="180" y="32" font-family="sans-serif" font-size="18" text-anchor="middle" fill="#333" font-weight="bold">SensorApp</text>
+  <text x="310" y="32" font-family="sans-serif" font-size="16" fill="#555">📋</text>
+  <text x="335" y="32" font-family="sans-serif" font-size="16" fill="#555">⚙</text>
+
+  <!-- List items -->
+  <!-- 1. Accelerometer -->
+  <rect x="0" y="56" width="360" height="48" fill="white"/>
+  <text x="46" y="74" font-family="sans-serif" font-size="12" fill="#006494">📱</text>
+  <text x="70" y="74" font-family="sans-serif" font-size="14" fill="#333" font-weight="500">Accelerometer</text>
+  <text x="70" y="92" font-family="sans-serif" font-size="11" fill="#888">9.812 m/s²</text>
+  <circle cx="310" cy="78" r="5" fill="#4CAF50" opacity="0.7"/>
+  <circle cx="310" cy="78" r="5" fill="#4CAF50" opacity="0.3"/>
+  <text x="330" y="82" font-family="sans-serif" font-size="14" fill="#ccc">›</text>
+  <line x1="16" y1="104" x2="344" y2="104" stroke="#eee" stroke-width="1"/>
+
+  <!-- 2. Gyroscope -->
+  <rect x="0" y="104" width="360" height="48" fill="white"/>
+  <text x="46" y="122" font-family="sans-serif" font-size="12" fill="#006494">🌀</text>
+  <text x="70" y="122" font-family="sans-serif" font-size="14" fill="#333" font-weight="500">Gyroscope</text>
+  <text x="70" y="140" font-family="sans-serif" font-size="11" fill="#888">0.012 °/s</text>
+  <text x="330" y="130" font-family="sans-serif" font-size="14" fill="#ccc">›</text>
+  <line x1="16" y1="152" x2="344" y2="152" stroke="#eee" stroke-width="1"/>
+
+  <!-- 3. Magnetometer -->
+  <rect x="0" y="152" width="360" height="48" fill="white"/>
+  <text x="46" y="170" font-family="sans-serif" font-size="12" fill="#006494">🧲</text>
+  <text x="70" y="170" font-family="sans-serif" font-size="14" fill="#333" font-weight="500">Magnetometer</text>
+  <text x="70" y="188" font-family="sans-serif" font-size="11" fill="#888">45.23 µT</text>
+  <text x="330" y="178" font-family="sans-serif" font-size="14" fill="#ccc">›</text>
+  <line x1="16" y1="200" x2="344" y2="200" stroke="#eee" stroke-width="1"/>
+
+  <!-- 4. Light -->
+  <rect x="0" y="200" width="360" height="48" fill="white"/>
+  <text x="46" y="218" font-family="sans-serif" font-size="12" fill="#006494">☀</text>
+  <text x="70" y="218" font-family="sans-serif" font-size="14" fill="#333" font-weight="500">Light</text>
+  <text x="70" y="236" font-family="sans-serif" font-size="11" fill="#888">342.0 lx</text>
+  <text x="330" y="226" font-family="sans-serif" font-size="14" fill="#ccc">›</text>
+  <line x1="16" y1="248" x2="344" y2="248" stroke="#eee" stroke-width="1"/>
+
+  <!-- 5. Proximity (unavailable) -->
+  <rect x="0" y="248" width="360" height="48" fill="white"/>
+  <text x="46" y="266" font-family="sans-serif" font-size="12" fill="#ccc">📏</text>
+  <text x="70" y="266" font-family="sans-serif" font-size="14" fill="#ccc" font-weight="500">Proximity</text>
+  <text x="70" y="284" font-family="sans-serif" font-size="11" fill="#ddd">Not available on this device</text>
+  <line x1="16" y1="296" x2="344" y2="296" stroke="#eee" stroke-width="1"/>
+
+  <!-- 6. Barometer (unavailable) -->
+  <rect x="0" y="296" width="360" height="48" fill="white"/>
+  <text x="46" y="314" font-family="sans-serif" font-size="12" fill="#ccc">🌡</text>
+  <text x="70" y="314" font-family="sans-serif" font-size="14" fill="#ccc" font-weight="500">Barometer</text>
+  <text x="70" y="332" font-family="sans-serif" font-size="11" fill="#ddd">Not available on this device</text>
+  <line x1="16" y1="344" x2="344" y2="344" stroke="#eee" stroke-width="1"/>
+
+  <!-- 7. Step Counter -->
+  <rect x="0" y="344" width="360" height="48" fill="white"/>
+  <text x="46" y="362" font-family="sans-serif" font-size="12" fill="#006494">👣</text>
+  <text x="70" y="362" font-family="sans-serif" font-size="14" fill="#333" font-weight="500">Step Counter</text>
+  <text x="70" y="380" font-family="sans-serif" font-size="11" fill="#888">1,284 steps</text>
+  <text x="330" y="370" font-family="sans-serif" font-size="14" fill="#ccc">›</text>
+  <line x1="16" y1="392" x2="344" y2="392" stroke="#eee" stroke-width="1"/>
+
+  <!-- 8. Gravity -->
+  <rect x="0" y="392" width="360" height="48" fill="white"/>
+  <text x="46" y="410" font-family="sans-serif" font-size="12" fill="#006494">🌍</text>
+  <text x="70" y="410" font-family="sans-serif" font-size="14" fill="#333" font-weight="500">Gravity</text>
+  <text x="70" y="428" font-family="sans-serif" font-size="11" fill="#888">9.801 m/s²</text>
+  <text x="330" y="418" font-family="sans-serif" font-size="14" fill="#ccc">›</text>
+  <line x1="16" y1="440" x2="344" y2="440" stroke="#eee" stroke-width="1"/>
+
+  <!-- 9. Linear Acceleration -->
+  <rect x="0" y="440" width="360" height="48" fill="white"/>
+  <text x="46" y="458" font-family="sans-serif" font-size="12" fill="#006494">📐</text>
+  <text x="70" y="458" font-family="sans-serif" font-size="14" fill="#333" font-weight="500">Linear Acceleration</text>
+  <text x="70" y="476" font-family="sans-serif" font-size="11" fill="#888">0.023 m/s²</text>
+  <text x="330" y="466" font-family="sans-serif" font-size="14" fill="#ccc">›</text>
+  <line x1="16" y1="488" x2="344" y2="488" stroke="#eee" stroke-width="1"/>
+
+  <!-- 10. Rotation Vector -->
+  <rect x="0" y="488" width="360" height="48" fill="white"/>
+  <text x="46" y="506" font-family="sans-serif" font-size="12" fill="#006494">🔄</text>
+  <text x="70" y="506" font-family="sans-serif" font-size="14" fill="#333" font-weight="500">Rotation Vector</text>
+  <text x="70" y="524" font-family="sans-serif" font-size="11" fill="#888">0.891</text>
+  <text x="330" y="514" font-family="sans-serif" font-size="14" fill="#ccc">›</text>
+  <line x1="16" y1="536" x2="344" y2="536" stroke="#eee" stroke-width="1"/>
 </svg>
