@@ -13,7 +13,7 @@ Android sensor monitoring app. Kotlin + Compose (Material 3), Clean Architecture
 - `domain/` — zero Android imports. Pure Kotlin models, interfaces, use cases.
 - `data/` — Room entities/DAOs, `SensorDataSource` (callbackFlow), `SensorRepositoryImpl`.
 - `presentation/` — Compose screens, ViewModels, theme, navigation, permission handler.
-- `di/` — Hilt modules (AppModule, DatabaseModule, SensorModule).
+- `di/` — Hilt modules (DatabaseModule, SensorModule).
 
 ## Key rules
 - UI never touches DAO or SensorManager — always through `SensorRepository`.
@@ -28,14 +28,15 @@ Android sensor monitoring app. Kotlin + Compose (Material 3), Clean Architecture
 |--------|--------|------------|
 | Dashboard | 2-col `LazyVerticalGrid` | Category headers, card tiles with icon circles, live values |
 | Detail | Scrollable | Gradient chart, crosshair + tooltip on tap, Start/Stop Logging, CSV export |
-| History | `LazyColumn` | Session-based cards (not individual readings), search bar, sort, clear dialog |
+| History | `LazyColumn` | Session-based cards, search bar, sort, clear dialog |
 | Settings | Scrollable | Polling rate (radio), DB stats, credits (Shreyash Pattewar) |
 
 ## Quirks
-- Dark mode forced always — `Theme.kt` uses `DarkColorScheme` directly, no system toggle.
+- Dark mode forced always — `Theme.kt` uses `DarkColorScheme` directly, no light colors.
 - Chart uses in-memory buffer (last 60 readings), not Room.
 - Each Start/Stop Logging creates/ends a `LogSession` row in Room. `onCleared()` ends active session.
 - Polling delay stored in-memory only (`currentDelay`). No DataStore.
 - CSV export: `MediaStore.Downloads` (API 29+), `Environment` fallback (pre-Q).
 - DB v2 with `fallbackToDestructiveMigration()` (early dev).
 - 10 sensors supported at runtime.
+- versionCode = 5, versionName = "1.5".

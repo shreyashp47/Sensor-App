@@ -24,9 +24,6 @@ interface SensorDao {
     )
     fun getRecentByType(sensorType: String, limit: Int): Flow<List<SensorReadingEntity>>
 
-    @Query("SELECT * FROM sensor_readings WHERE sensor_type = :sensorType ORDER BY timestamp_ms DESC")
-    fun getByType(sensorType: String): Flow<List<SensorReadingEntity>>
-
     @Query("SELECT * FROM sensor_readings WHERE sensor_type = :sensorType ORDER BY timestamp_ms DESC LIMIT :limit")
     fun getByTypeLimited(sensorType: String, limit: Int): Flow<List<SensorReadingEntity>>
 
@@ -38,7 +35,4 @@ interface SensorDao {
 
     @Query("SELECT COUNT(*) FROM sensor_readings")
     suspend fun count(): Int
-
-    @Query("SELECT COUNT(*) FROM sensor_readings WHERE sensor_type = :sensorType")
-    suspend fun countByType(sensorType: String): Int
 }

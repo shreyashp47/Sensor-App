@@ -34,8 +34,4 @@ interface SensorRepository {
     suspend fun getDelay(): Int
 
     suspend fun setDelay(delay: Int)
-
-    suspend fun isLoggingEnabled(sensorType: SensorType): Boolean
-
-    suspend fun setLoggingEnabled(sensorType: SensorType, enabled: Boolean)
 }

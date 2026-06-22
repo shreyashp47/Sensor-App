@@ -11,11 +11,9 @@ import com.shreyash.sensorapp.domain.usecase.ObserveSensorUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,9 +26,6 @@ class DashboardViewModel @Inject constructor(
 
     private val _sensorStates = MutableStateFlow<List<SensorState>>(emptyList())
     val sensorStates: StateFlow<List<SensorState>> = _sensorStates.asStateFlow()
-
-    private val _isLoggingActive = MutableStateFlow(false)
-    val isLoggingActive: StateFlow<Boolean> = _isLoggingActive.asStateFlow()
 
     private val activeJobs = mutableMapOf<SensorType, Job>()
 
@@ -62,10 +57,6 @@ class DashboardViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    fun toggleLogging() {
-        _isLoggingActive.update { !it }
     }
 
     override fun onCleared() {

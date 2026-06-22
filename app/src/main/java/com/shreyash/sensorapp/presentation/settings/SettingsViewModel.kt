@@ -25,24 +25,13 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             _selectedDelay.value = repository.getDelay()
             _totalRows.value = repository.getTotalRowCount()
-            refreshDelay()
         }
-    }
-
-    private suspend fun refreshDelay() {
-        _selectedDelay.value = repository.getDelay()
     }
 
     fun setDelay(delay: Int) {
         viewModelScope.launch {
             repository.setDelay(delay)
             _selectedDelay.value = delay
-        }
-    }
-
-    fun refreshStats() {
-        viewModelScope.launch {
-            _totalRows.value = repository.getTotalRowCount()
         }
     }
 

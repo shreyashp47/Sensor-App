@@ -27,8 +27,6 @@ class SensorRepositoryImpl @Inject constructor(
     @Volatile
     private var currentDelay: Int = android.hardware.SensorManager.SENSOR_DELAY_UI
 
-    private val loggingEnabled = mutableMapOf<SensorType, Boolean>()
-
     override fun observeSensor(sensorType: SensorType): Flow<SensorReading> {
         return sensorDataSource.observeSensor(sensorType, currentDelay)
     }
@@ -115,14 +113,6 @@ class SensorRepositoryImpl @Inject constructor(
 
     override suspend fun setDelay(delay: Int) {
         currentDelay = delay
-    }
-
-    override suspend fun isLoggingEnabled(sensorType: SensorType): Boolean {
-        return loggingEnabled[sensorType] ?: true
-    }
-
-    override suspend fun setLoggingEnabled(sensorType: SensorType, enabled: Boolean) {
-        loggingEnabled[sensorType] = enabled
     }
 }
 

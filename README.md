@@ -10,7 +10,13 @@
 
 Real-time Android sensor monitor. Live readings with scrolling charts, session-based logging, CSV export, and history tracking.
 
-**Package:** `com.shreyash.sensorapp` · **Dark mode only**
+**Package:** `com.shreyash.sensorapp` · **Dark mode only** · **v1.5**
+
+<p align="center">
+  <a href="https://play.google.com/store/apps/details?id=com.shreyash.sensorapp">
+    <img src="https://img.shields.io/badge/Google_Play-Open_Testing-8BCBFF?style=for-the-badge&logo=google-play&logoColor=white" alt="Google Play">
+  </a>
+</p>
 
 ## Tech Stack
 
