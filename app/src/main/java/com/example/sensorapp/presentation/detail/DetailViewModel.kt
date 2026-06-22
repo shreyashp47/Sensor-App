@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,29 +34,37 @@ class DetailViewModel @Inject constructor(
     private val _currentReading = MutableStateFlow<SensorReading?>(null)
     val currentReading: StateFlow<SensorReading?> = _currentReading.asStateFlow()
 
-    private val _isRunning = MutableStateFlow(false)
-    val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
+    private val _isLogging = MutableStateFlow(false)
+    val isLogging: StateFlow<Boolean> = _isLogging.asStateFlow()
 
     val history: StateFlow<List<SensorReading>> = getSensorHistoryUseCase(sensorType, 60)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private var sensorJob: Job? = null
 
-    fun start() {
-        if (sensorJob != null) return
-        _isRunning.value = true
+    init {
+        startObserving()
+    }
+
+    fun startObserving() {
+        sensorJob?.cancel()
         sensorJob = viewModelScope.launch {
             observeSensorUseCase(sensorType).collect { reading ->
                 _currentReading.value = reading
-                logSensorReadingUseCase(reading)
+                if (_isLogging.value) {
+                    logSensorReadingUseCase(reading)
+                }
             }
         }
     }
 
-    fun stop() {
+    fun stopObserving() {
         sensorJob?.cancel()
         sensorJob = null
-        _isRunning.value = false
+    }
+
+    fun toggleLogging() {
+        _isLogging.update { !it }
     }
 
     override fun onCleared() {
