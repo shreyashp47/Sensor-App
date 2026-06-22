@@ -76,7 +76,7 @@ jobs:
       - name: Decode and setup keystore
         run: |
           mkdir -p keystore_details
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > keystore_details/sensor.jks
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | tr -d ' \n\r' | base64 -d > keystore_details/sensor.jks
 
       - name: Build AAB (bundleRelease)
         env:
