@@ -10,28 +10,36 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -39,7 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sensorapp.domain.model.LogSession
-import com.example.sensorapp.domain.model.SensorType
+import com.example.sensorapp.presentation.sensorIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,8 +56,28 @@ fun HistoryScreen(
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
     val sessions by viewModel.sessions.collectAsStateWithLifecycle()
-    val selectedFilter by viewModel.selectedFilter.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val sortOption by viewModel.sortOption.collectAsStateWithLifecycle()
     val isClearing by viewModel.isClearing.collectAsStateWithLifecycle()
+    val showClearConfirmation by viewModel.showClearConfirmation.collectAsStateWithLifecycle()
+
+    if (showClearConfirmation) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissClearConfirmation() },
+            title = { Text("Clear all sessions?") },
+            text = { Text("This will permanently delete all logged sessions. This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.confirmClearAll() }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissClearConfirmation() }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -62,14 +90,15 @@ fun HistoryScreen(
                 },
                 actions = {
                     TextButton(
-                        onClick = { viewModel.clearAllSessions() },
-                        enabled = !isClearing
+                        onClick = { viewModel.requestClearAll() },
+                        enabled = !isClearing && sessions.isNotEmpty()
                     ) {
                         Icon(
                             Icons.Default.DeleteSweep,
                             contentDescription = "Clear all",
-                            modifier = Modifier.padding(end = 4.dp)
+                            modifier = Modifier.size(18.dp)
                         )
+                        Spacer(Modifier.width(4.dp))
                         Text("Clear all")
                     }
                 },
@@ -84,29 +113,51 @@ fun HistoryScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            Row(
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.setSearchQuery(it) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                placeholder = { Text("Search by sensor name...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors()
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                FilterChip(
-                    selected = selectedFilter == null,
-                    onClick = { viewModel.setFilter(null) },
-                    label = { Text("All") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primary
+                var sortExpanded by remember { mutableStateOf(false) }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "Sort:",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                )
-                SensorType.entries.forEach { type ->
-                    FilterChip(
-                        selected = selectedFilter == type,
-                        onClick = { viewModel.setFilter(type) },
-                        label = { Text(type.displayName, maxLines = 1) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primary
-                        )
-                    )
+                    Spacer(Modifier.width(4.dp))
+                    TextButton(onClick = { sortExpanded = true }) {
+                        Text(sortOption.displayName)
+                    }
+                    DropdownMenu(
+                        expanded = sortExpanded,
+                        onDismissRequest = { sortExpanded = false }
+                    ) {
+                        SortOption.entries.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option.displayName) },
+                                onClick = {
+                                    viewModel.setSortOption(option)
+                                    sortExpanded = false
+                                }
+                            )
+                        }
+                    }
                 }
             }
 
@@ -141,8 +192,12 @@ private fun SessionItem(session: LogSession) {
         val diff = end - session.startTimeMs
         val seconds = diff / 1000
         val minutes = seconds / 60
-        if (minutes > 0) "${minutes}m ${seconds % 60}s"
-        else "${seconds}s"
+        val hours = minutes / 60
+        when {
+            hours > 0 -> "${hours}h ${minutes % 60}m"
+            minutes > 0 -> "${minutes}m ${seconds % 60}s"
+            else -> "${seconds}s"
+        }
     } ?: "In progress..."
 
     Card(
@@ -154,13 +209,23 @@ private fun SessionItem(session: LogSession) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = session.sensorType.displayName,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = sensorIcon(session.sensorType),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = session.sensorType.displayName,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
                 Text(
                     text = formatTimestamp(session.startTimeMs),
                     style = MaterialTheme.typography.labelSmall,

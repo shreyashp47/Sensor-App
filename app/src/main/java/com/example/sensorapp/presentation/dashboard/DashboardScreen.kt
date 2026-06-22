@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,10 +41,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sensorapp.domain.model.SensorAvailability
+import com.example.sensorapp.domain.model.SensorCategory
 import com.example.sensorapp.domain.model.SensorState
 import com.example.sensorapp.domain.model.SensorType
 import com.example.sensorapp.presentation.permission.PermissionDialog
 import com.example.sensorapp.presentation.permission.rememberPermissionHandler
+import com.example.sensorapp.presentation.sensorIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +59,10 @@ fun DashboardScreen(
     val sensorStates by viewModel.sensorStates.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val permissionHandler = rememberPermissionHandler(snackbarHostState)
+
+    val grouped = remember(sensorStates) {
+        sensorStates.groupBy { it.type.category }
+    }
 
     Scaffold(
         topBar = {
@@ -83,17 +88,26 @@ fun DashboardScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            items(sensorStates, key = { it.type }) { state ->
-                SensorListItem(
-                    state = state,
-                    onClick = {
-                        if (state.availability is SensorAvailability.Available) {
-                            permissionHandler.checkAndRequest(state.type) {
-                                onNavigateToDetail(state.type)
+            SensorCategory.entries.forEach { category ->
+                val states = grouped[category] ?: return@forEach
+                if (states.isEmpty()) return@forEach
+
+                item(key = "header_${category.name}") {
+                    CategoryHeader(category = category)
+                }
+
+                items(states, key = { it.type }) { state ->
+                    SensorListItem(
+                        state = state,
+                        onClick = {
+                            if (state.availability is SensorAvailability.Available) {
+                                permissionHandler.checkAndRequest(state.type) {
+                                    onNavigateToDetail(state.type)
+                                }
                             }
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }
@@ -105,6 +119,19 @@ fun DashboardScreen(
             onConfirm = permissionHandler.onConfirmDialog
         )
     }
+}
+
+@Composable
+private fun CategoryHeader(category: SensorCategory) {
+    Text(
+        text = category.displayName,
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -130,7 +157,7 @@ fun SensorListItem(
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(
-                imageVector = Icons.Default.Sensors,
+                imageVector = sensorIcon(state.type),
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
                 tint = if (isAvailable) MaterialTheme.colorScheme.primary
@@ -188,5 +215,3 @@ fun SensorListItem(
         }
     }
 }
-
-

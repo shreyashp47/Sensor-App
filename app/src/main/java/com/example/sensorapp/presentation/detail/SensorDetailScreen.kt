@@ -12,6 +12,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,8 +32,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -50,21 +51,28 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -360,6 +368,9 @@ fun LiveLineChart(
     val values = readings.map { it.values.getOrElse(axisIndex) { 0f } }
     val lineColor = MaterialTheme.colorScheme.primary
     val gridColor = MaterialTheme.colorScheme.outlineVariant
+    val crosshairColor = MaterialTheme.colorScheme.tertiary
+
+    var touchIndex by remember { mutableStateOf(-1) }
 
     Card(
         modifier = modifier,
@@ -372,15 +383,24 @@ fun LiveLineChart(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(8.dp)
+                .pointerInput(values) {
+                    detectTapGestures { offset ->
+                        if (values.size < 2) return@detectTapGestures
+                        val stepX = size.width.toFloat() / (values.size - 1)
+                        val index = ((offset.x / stepX) + 0.5f).toInt()
+                            .coerceIn(0, values.size - 1)
+                        touchIndex = if (touchIndex == index) -1 else index
+                    }
+                }
         ) {
             if (values.size < 2) return@Canvas
 
             val minVal = values.min()
             val maxVal = values.max()
             val range = if (maxVal - minVal == 0f) 1f else maxVal - minVal
-            val padding = 0.1f
-            val adjustedMin = minVal - range * padding
-            val adjustedMax = maxVal + range * padding
+            val paddingV = 0.1f
+            val adjustedMin = minVal - range * paddingV
+            val adjustedMax = maxVal + range * paddingV
             val adjustedRange = adjustedMax - adjustedMin
 
             val stepX = size.width / (values.size - 1).coerceAtLeast(1)
@@ -412,8 +432,76 @@ fun LiveLineChart(
                     join = StrokeJoin.Round
                 )
             )
+
+            if (touchIndex in values.indices && values.size >= 2) {
+                val x = touchIndex * stepX
+                val value = values[touchIndex]
+                val normY = ((value - adjustedMin) / adjustedRange).coerceIn(0f, 1f)
+                val y = size.height - normY * size.height
+                val point = Offset(x, y)
+
+                drawLine(
+                    color = crosshairColor,
+                    start = Offset(x, 0f),
+                    end = Offset(x, size.height),
+                    strokeWidth = 1.5f
+                )
+
+                drawCircle(
+                    color = crosshairColor,
+                    radius = 5.dp.toPx(),
+                    center = point
+                )
+
+                drawCrosshairTooltip(
+                    value = value,
+                    x = x,
+                    y = y
+                )
+            }
         }
     }
+}
+
+private fun DrawScope.drawCrosshairTooltip(value: Float, x: Float, y: Float) {
+    val text = formatLargeValue(value)
+    val paint = android.graphics.Paint().apply {
+        color = android.graphics.Color.WHITE
+        textSize = 28f
+        textAlign = android.graphics.Paint.Align.CENTER
+        isAntiAlias = true
+    }
+    val bgPaint = android.graphics.Paint().apply {
+        color = android.graphics.Color.argb(200, 60, 60, 60)
+        isAntiAlias = true
+    }
+
+    val textWidth = paint.measureText(text)
+    val padding = 20f
+    val rectLeft = x - textWidth / 2 - padding
+    val rectTop = y - paint.textSize - padding * 2
+    val rectRight = x + textWidth / 2 + padding
+    val rectBottom = y - 8.dp.toPx()
+
+    val adjustedRectLeft = rectLeft.coerceAtLeast(0f)
+    val adjustedRectRight = rectRight.coerceAtMost(size.width)
+
+    drawRoundRect(
+        color = Color(60, 60, 60, 200),
+        topLeft = Offset(adjustedRectLeft, rectTop),
+        size = androidx.compose.ui.geometry.Size(
+            adjustedRectRight - adjustedRectLeft,
+            rectBottom - rectTop
+        ),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(12f)
+    )
+
+    drawContext.canvas.nativeCanvas.drawText(
+        text,
+        x,
+        rectBottom - padding,
+        paint
+    )
 }
 
 private fun formatLargeValue(value: Float): String {
