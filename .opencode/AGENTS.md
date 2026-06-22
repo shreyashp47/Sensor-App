@@ -1,6 +1,7 @@
 # AGENTS.md — SensorApp
 
-Android sensor monitoring app. Kotlin + Compose (Material 3), Clean Architecture, Hilt, Room, Flow.
+Package: `com.shreyash.sensorapp`
+Android sensor monitoring app. Kotlin + Compose (Material 3), Clean Architecture, Hilt, Room, Flow. **Dark mode only**.
 
 ## Commands
 - `./gradlew :app:assembleDebug` — debug APK
@@ -31,6 +32,7 @@ Android sensor monitoring app. Kotlin + Compose (Material 3), Clean Architecture
 | Settings | Scrollable | Polling rate (radio), DB stats, credits (Shreyash Pattewar) |
 
 ## Quirks
+- Dark mode forced always — `Theme.kt` uses `DarkColorScheme` directly, no system toggle.
 - Chart uses in-memory buffer (last 60 readings), not Room.
 - Each Start/Stop Logging creates/ends a `LogSession` row in Room. `onCleared()` ends active session.
 - Polling delay stored in-memory only (`currentDelay`). No DataStore.

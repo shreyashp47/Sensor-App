@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.sensorapp"
+    namespace = "com.shreyash.sensorapp"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.sensorapp"
+        applicationId = "com.shreyash.sensorapp"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
