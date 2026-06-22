@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -86,7 +87,7 @@ fun SensorDetailScreen(
 ) {
     val currentReading by viewModel.currentReading.collectAsStateWithLifecycle()
     val isLogging by viewModel.isLogging.collectAsStateWithLifecycle()
-    val history by viewModel.history.collectAsStateWithLifecycle()
+    val chartReadings by viewModel.chartReadings.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -146,14 +147,14 @@ fun SensorDetailScreen(
                 Button(
                     onClick = {
                         scope.launch {
-                            val uri = exportToCsv(context, history, sensorType)
+                            val uri = exportToCsv(context, chartReadings, sensorType)
                             if (uri != null) {
                                 snackbarHostState.showSnackbar("CSV exported to Downloads")
                             }
                         }
                     },
                     modifier = Modifier.weight(1f),
-                    enabled = history.isNotEmpty()
+                    enabled = chartReadings.isNotEmpty()
                 ) {
                     Icon(
                         imageVector = Icons.Default.Download,
@@ -186,7 +187,7 @@ fun SensorDetailScreen(
             Spacer(Modifier.height(24.dp))
 
             LiveLineChart(
-                readings = history,
+                readings = chartReadings,
                 sensorType = sensorType,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -267,7 +268,8 @@ private fun LiveValueDisplay(
             text = formatLargeValue(value),
             style = MaterialTheme.typography.displayLarge,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            maxLines = 1
         )
         if (sensorType.unitSingle != null && sensorType.unitSingle.isNotEmpty()) {
             Text(
@@ -310,7 +312,10 @@ private fun AxisValue(
     value: Float,
     unit: String
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.widthIn(min = 96.dp)
+    ) {
         Text(
             text = label,
             style = MaterialTheme.typography.titleMedium,
@@ -320,7 +325,9 @@ private fun AxisValue(
         Text(
             text = formatLargeValue(value),
             style = MaterialTheme.typography.displayMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            maxLines = 1
         )
         if (unit.isNotEmpty()) {
             Text(
@@ -410,13 +417,7 @@ fun LiveLineChart(
 }
 
 private fun formatLargeValue(value: Float): String {
-    return when {
-        value >= 10000 -> String.format("%.0f", value)
-        value >= 1000 -> String.format("%.1f", value)
-        value >= 100 -> String.format("%.1f", value)
-        value >= 1 -> String.format("%.2f", value)
-        else -> String.format("%.3f", value)
-    }
+    return String.format("%.3f", value)
 }
 
 private fun formatDetailValue(value: Float?): String {

@@ -5,9 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sensorapp.domain.model.SensorReading
 import com.example.sensorapp.domain.model.SensorType
-import com.example.sensorapp.domain.usecase.GetSensorHistoryUseCase
 import com.example.sensorapp.domain.usecase.LogSensorReadingUseCase
 import com.example.sensorapp.domain.usecase.ObserveSensorUseCase
+import com.example.sensorapp.domain.repository.SensorRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +23,7 @@ import javax.inject.Inject
 class DetailViewModel @Inject constructor(
     private val observeSensorUseCase: ObserveSensorUseCase,
     private val logSensorReadingUseCase: LogSensorReadingUseCase,
-    private val getSensorHistoryUseCase: GetSensorHistoryUseCase,
+    private val repository: SensorRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -37,10 +37,11 @@ class DetailViewModel @Inject constructor(
     private val _isLogging = MutableStateFlow(false)
     val isLogging: StateFlow<Boolean> = _isLogging.asStateFlow()
 
-    val history: StateFlow<List<SensorReading>> = getSensorHistoryUseCase(sensorType, 60)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    private val _chartReadings = MutableStateFlow<List<SensorReading>>(emptyList())
+    val chartReadings: StateFlow<List<SensorReading>> = _chartReadings.asStateFlow()
 
     private var sensorJob: Job? = null
+    private var currentSessionId: Long? = null
 
     init {
         startObserving()
@@ -51,6 +52,9 @@ class DetailViewModel @Inject constructor(
         sensorJob = viewModelScope.launch {
             observeSensorUseCase(sensorType).collect { reading ->
                 _currentReading.value = reading
+                _chartReadings.update { buffer ->
+                    (buffer + reading).takeLast(60)
+                }
                 if (_isLogging.value) {
                     logSensorReadingUseCase(reading)
                 }
@@ -64,11 +68,30 @@ class DetailViewModel @Inject constructor(
     }
 
     fun toggleLogging() {
-        _isLogging.update { !it }
+        viewModelScope.launch {
+            if (_isLogging.value) {
+                val sessionId = currentSessionId
+                if (sessionId != null) {
+                    repository.endSession(sessionId, System.currentTimeMillis())
+                }
+                currentSessionId = null
+                _isLogging.value = false
+            } else {
+                val sessionId = repository.startSession(sensorType)
+                currentSessionId = sessionId
+                _isLogging.value = true
+            }
+        }
     }
 
     override fun onCleared() {
         sensorJob?.cancel()
+        viewModelScope.launch {
+            val sessionId = currentSessionId
+            if (sessionId != null) {
+                repository.endSession(sessionId, System.currentTimeMillis())
+            }
+        }
         super.onCleared()
     }
 }

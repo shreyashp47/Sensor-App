@@ -3,6 +3,7 @@ package com.example.sensorapp.di
 import android.content.Context
 import androidx.room.Room
 import com.example.sensorapp.data.local.AppDatabase
+import com.example.sensorapp.data.local.SessionDao
 import com.example.sensorapp.data.local.SensorDao
 import dagger.Module
 import dagger.Provides
@@ -22,9 +23,12 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "sensorapp.db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
 
     @Provides
     fun provideSensorDao(database: AppDatabase): SensorDao = database.sensorDao()
+
+    @Provides
+    fun provideSessionDao(database: AppDatabase): SessionDao = database.sessionDao()
 }

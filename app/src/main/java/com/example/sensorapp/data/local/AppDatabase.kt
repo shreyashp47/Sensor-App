@@ -5,11 +5,12 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(
-    entities = [SensorReadingEntity::class],
-    version = 1,
+    entities = [SensorReadingEntity::class, LogSessionEntity::class],
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun sensorDao(): SensorDao
+    abstract fun sessionDao(): SessionDao
 }

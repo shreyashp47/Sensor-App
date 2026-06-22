@@ -1,14 +1,15 @@
 package com.example.sensorapp.data.repository
 
 import com.example.sensorapp.data.local.AppDatabase
+import com.example.sensorapp.data.local.LogSessionEntity
 import com.example.sensorapp.data.local.SensorReadingEntity
 import com.example.sensorapp.data.sensor.SensorDataSource
+import com.example.sensorapp.domain.model.LogSession
 import com.example.sensorapp.domain.model.SensorAvailability
 import com.example.sensorapp.domain.model.SensorReading
 import com.example.sensorapp.domain.model.SensorType
 import com.example.sensorapp.domain.repository.SensorRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -21,6 +22,7 @@ class SensorRepositoryImpl @Inject constructor(
 ) : SensorRepository {
 
     private val dao = database.sensorDao()
+    private val sessionDao = database.sessionDao()
 
     @Volatile
     private var currentDelay: Int = android.hardware.SensorManager.SENSOR_DELAY_UI
@@ -81,6 +83,34 @@ class SensorRepositoryImpl @Inject constructor(
 
     override suspend fun getTotalRowCount(): Int = dao.count()
 
+    override suspend fun startSession(sensorType: SensorType): Long {
+        val entity = LogSessionEntity(
+            sensorType = sensorType.name,
+            startTimeMs = System.currentTimeMillis()
+        )
+        return sessionDao.insert(entity)
+    }
+
+    override suspend fun endSession(sessionId: Long, endTimeMs: Long) {
+        val session = sessionDao.getById(sessionId) ?: return
+        sessionDao.update(session.copy(endTimeMs = endTimeMs))
+    }
+
+    override fun getSessions(sensorType: SensorType?): Flow<List<LogSession>> {
+        val flow = if (sensorType != null) {
+            sessionDao.getByType(sensorType.name)
+        } else {
+            sessionDao.getAll()
+        }
+        return flow.map { entities ->
+            entities.map { it.toDomainModel() }
+        }
+    }
+
+    override suspend fun deleteAllSessions() {
+        sessionDao.deleteAll()
+    }
+
     override suspend fun getDelay(): Int = currentDelay
 
     override suspend fun setDelay(delay: Int) {
@@ -101,4 +131,13 @@ private fun SensorReadingEntity.toDomainModel() = SensorReading(
     values = this.values,
     accuracy = this.accuracy,
     timestampMs = this.timestampMs
+)
+
+private fun LogSessionEntity.toDomainModel() = LogSession(
+    id = this.id,
+    sensorType = SensorType.valueOf(this.sensorType),
+    startTimeMs = this.startTimeMs,
+    endTimeMs = this.endTimeMs,
+    readingCount = this.readingCount,
+    summary = this.summary
 )

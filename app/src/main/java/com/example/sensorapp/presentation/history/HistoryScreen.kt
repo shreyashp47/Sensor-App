@@ -35,11 +35,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.sensorapp.domain.model.SensorReading
+import com.example.sensorapp.domain.model.LogSession
 import com.example.sensorapp.domain.model.SensorType
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,7 +47,7 @@ fun HistoryScreen(
     onBack: () -> Unit,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
-    val readings by viewModel.readings.collectAsStateWithLifecycle()
+    val sessions by viewModel.sessions.collectAsStateWithLifecycle()
     val selectedFilter by viewModel.selectedFilter.collectAsStateWithLifecycle()
     val isClearing by viewModel.isClearing.collectAsStateWithLifecycle()
 
@@ -63,15 +62,15 @@ fun HistoryScreen(
                 },
                 actions = {
                     TextButton(
-                        onClick = { viewModel.clearOldReadings() },
+                        onClick = { viewModel.clearAllSessions() },
                         enabled = !isClearing
                     ) {
                         Icon(
                             Icons.Default.DeleteSweep,
-                            contentDescription = "Clear old",
+                            contentDescription = "Clear all",
                             modifier = Modifier.padding(end = 4.dp)
                         )
-                        Text("Clear 24h")
+                        Text("Clear all")
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -111,13 +110,13 @@ fun HistoryScreen(
                 }
             }
 
-            if (readings.isEmpty()) {
+            if (sessions.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No readings yet",
+                        text = "No logging sessions yet.\nStart logging from a sensor to see it here.",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -127,8 +126,8 @@ fun HistoryScreen(
                     contentPadding = PaddingValues(12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(readings, key = { "${it.sensorType.name}_${it.timestampMs}" }) { reading ->
-                        ReadingItem(reading = reading)
+                    items(sessions, key = { it.id }) { session ->
+                        SessionItem(session = session)
                     }
                 }
             }
@@ -137,7 +136,15 @@ fun HistoryScreen(
 }
 
 @Composable
-private fun ReadingItem(reading: SensorReading) {
+private fun SessionItem(session: LogSession) {
+    val duration = session.endTimeMs?.let { end ->
+        val diff = end - session.startTimeMs
+        val seconds = diff / 1000
+        val minutes = seconds / 60
+        if (minutes > 0) "${minutes}m ${seconds % 60}s"
+        else "${seconds}s"
+    } ?: "In progress..."
+
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
@@ -150,37 +157,27 @@ private fun ReadingItem(reading: SensorReading) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = reading.sensorType.displayName,
+                    text = session.sensorType.displayName,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = formatTimestamp(reading.timestampMs),
+                    text = formatTimestamp(session.startTimeMs),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(Modifier.height(4.dp))
             Text(
-                text = reading.values.joinToString(", ") { formatValue(it) },
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                text = "Duration: $duration",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
 
 private fun formatTimestamp(ms: Long): String {
-    val sdf = java.text.SimpleDateFormat("HH:mm:ss.SSS", java.util.Locale.getDefault())
+    val sdf = java.text.SimpleDateFormat("MMM dd HH:mm", java.util.Locale.getDefault())
     return sdf.format(java.util.Date(ms))
-}
-
-private fun formatValue(value: Float): String {
-    return when {
-        value >= 1000 -> String.format("%.1f", value)
-        value >= 100 -> String.format("%.1f", value)
-        value >= 1 -> String.format("%.2f", value)
-        else -> String.format("%.3f", value)
-    }
 }

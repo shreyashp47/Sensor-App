@@ -1,5 +1,6 @@
 package com.example.sensorapp.domain.repository
 
+import com.example.sensorapp.domain.model.LogSession
 import com.example.sensorapp.domain.model.SensorAvailability
 import com.example.sensorapp.domain.model.SensorReading
 import com.example.sensorapp.domain.model.SensorType
@@ -21,6 +22,14 @@ interface SensorRepository {
     suspend fun clearOldReadings(olderThanMs: Long)
 
     suspend fun getTotalRowCount(): Int
+
+    suspend fun startSession(sensorType: SensorType): Long
+
+    suspend fun endSession(sessionId: Long, endTimeMs: Long)
+
+    fun getSessions(sensorType: SensorType?): Flow<List<LogSession>>
+
+    suspend fun deleteAllSessions()
 
     suspend fun getDelay(): Int
 
