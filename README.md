@@ -1,5 +1,13 @@
 # SensorApp
 
+<p align="center">
+  <img src="feature-graphic.png" alt="SensorApp" width="600">
+</p>
+
+<p align="center">
+  <img src="playstore-icon.png" alt="Icon" width="100">
+</p>
+
 Real-time Android sensor monitor. Live readings with scrolling charts, session-based logging, CSV export, and history tracking.
 
 **Package:** `com.shreyash.sensorapp` · **Dark mode only**
