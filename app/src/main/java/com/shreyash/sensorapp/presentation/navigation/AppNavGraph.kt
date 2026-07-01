@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.shreyash.sensorapp.domain.model.SensorType
+import com.shreyash.sensorapp.presentation.compass.CompassScreen
 import com.shreyash.sensorapp.presentation.dashboard.DashboardScreen
 import com.shreyash.sensorapp.presentation.detail.SensorDetailScreen
 import com.shreyash.sensorapp.presentation.history.HistoryScreen
@@ -23,6 +24,7 @@ fun AppNavGraph(navController: NavHostController) {
                 onNavigateToDetail = { sensorType ->
                     navController.navigate(Route.SensorDetail(sensorType).route)
                 },
+                onNavigateToCompass = { navController.navigate(Route.Compass.route) },
                 onNavigateToHistory = { navController.navigate(Route.History.route) },
                 onNavigateToSettings = { navController.navigate(Route.Settings.route) }
             )
@@ -44,6 +46,10 @@ fun AppNavGraph(navController: NavHostController) {
 
         composable(Route.History.route) {
             HistoryScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Route.Compass.route) {
+            CompassScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Route.Settings.route) {

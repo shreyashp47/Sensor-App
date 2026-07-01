@@ -12,4 +12,6 @@ sealed class Route(val route: String) {
             const val ROUTE_PATTERN = "sensor_detail/{sensorType}"
         }
     }
+
+    data object Compass : Route("compass")
 }
