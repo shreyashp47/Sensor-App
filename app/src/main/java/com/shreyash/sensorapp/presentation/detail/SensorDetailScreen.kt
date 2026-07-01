@@ -180,46 +180,62 @@ fun SensorDetailScreen(
             }
         }
     ) { padding ->
-        Column(
+        SensorDetailScreenContent(
+            sensorType = sensorType,
+            currentReading = currentReading,
+            isLogging = isLogging,
+            chartReadings = chartReadings,
+            modifier = Modifier.padding(padding)
+        )
+    }
+}
+
+@Composable
+private fun SensorDetailScreenContent(
+    sensorType: SensorType,
+    currentReading: SensorReading?,
+    isLogging: Boolean,
+    chartReadings: List<SensorReading>,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        LiveIndicator()
+
+        Spacer(Modifier.height(16.dp))
+
+        LiveValueDisplay(
+            reading = currentReading,
+            sensorType = sensorType
+        )
+
+        Spacer(Modifier.height(24.dp))
+
+        LiveLineChart(
+            readings = chartReadings,
+            sensorType = sensorType,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            LiveIndicator()
+                .fillMaxWidth()
+                .height(260.dp)
+        )
 
-            Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
 
-            LiveValueDisplay(
-                reading = currentReading,
-                sensorType = sensorType
-            )
+        Text(
+            text = "X: ${formatDetailValue(currentReading?.values?.getOrNull(0))} ${sensorType.unitX}" +
+                    if (sensorType.axisCount >= 2) "  Y: ${formatDetailValue(currentReading?.values?.getOrNull(1))} ${sensorType.unitY}" else "" +
+                    if (sensorType.axisCount >= 3) "  Z: ${formatDetailValue(currentReading?.values?.getOrNull(2))} ${sensorType.unitZ}" else "",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
 
-            Spacer(Modifier.height(24.dp))
-
-            LiveLineChart(
-                readings = chartReadings,
-                sensorType = sensorType,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(260.dp)
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            Text(
-                text = "X: ${formatDetailValue(currentReading?.values?.getOrNull(0))} ${sensorType.unitX}" +
-                        if (sensorType.axisCount >= 2) "  Y: ${formatDetailValue(currentReading?.values?.getOrNull(1))} ${sensorType.unitY}" else "" +
-                        if (sensorType.axisCount >= 3) "  Z: ${formatDetailValue(currentReading?.values?.getOrNull(2))} ${sensorType.unitZ}" else "",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(Modifier.height(16.dp))
-        }
+        Spacer(Modifier.height(16.dp))
     }
 }
 
@@ -580,6 +596,89 @@ private fun PreviewLiveValueDisplay() {
 private fun PreviewAxisValue() {
     SensorAppTheme {
         AxisValue(label = "X", value = 9.8f, unit = "m/s²")
+    }
+}
+
+private val mockChartReadings = List(60) { i ->
+    SensorReading(
+        sensorType = SensorType.ACCELEROMETER,
+        values = listOf(9.8f + kotlin.math.sin(i * 0.5f) * 2f, 0.5f, -0.3f),
+        accuracy = 3,
+        timestampMs = System.currentTimeMillis() - (60 - i) * 100L
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewSensorDetailScreen() {
+    SensorAppTheme {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text("Accelerometer") },
+                    navigationIcon = {
+                        IconButton(onClick = {}) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            },
+            bottomBar = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = {},
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Start Logging")
+                    }
+
+                    Button(
+                        onClick = {},
+                        modifier = Modifier.weight(1f),
+                        enabled = true
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Download,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Export CSV")
+                    }
+                }
+            }
+        ) { padding ->
+            SensorDetailScreenContent(
+                sensorType = SensorType.ACCELEROMETER,
+                currentReading = SensorReading(
+                    sensorType = SensorType.ACCELEROMETER,
+                    values = listOf(9.8f, 0.0f, 0.0f),
+                    accuracy = 3,
+                    timestampMs = System.currentTimeMillis()
+                ),
+                isLogging = false,
+                chartReadings = mockChartReadings,
+                modifier = Modifier.padding(padding)
+            )
+        }
     }
 }
 

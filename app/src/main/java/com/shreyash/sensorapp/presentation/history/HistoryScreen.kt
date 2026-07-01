@@ -114,98 +114,96 @@ fun HistoryScreen(
             )
         }
     ) { padding ->
-        Column(
+        HistoryScreenContent(
+            sessions = sessions,
+            searchQuery = searchQuery,
+            sortOption = sortOption,
+            onSearchQueryChanged = { viewModel.setSearchQuery(it) },
+            onSortOptionChanged = { viewModel.setSortOption(it) },
+            modifier = Modifier.padding(padding)
+        )
+    }
+}
+
+@Composable
+private fun HistoryScreenContent(
+    sessions: List<LogSession>,
+    searchQuery: String,
+    sortOption: SortOption,
+    onSearchQueryChanged: (String) -> Unit,
+    onSortOptionChanged: (SortOption) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxSize()) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = onSearchQueryChanged,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            placeholder = { Text("Search by sensor name...") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors()
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { viewModel.setSearchQuery(it) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                placeholder = { Text("Search by sensor name...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors()
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                var sortExpanded by remember { mutableStateOf(false) }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "Sort:",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    TextButton(onClick = { sortExpanded = true }) {
-                        Text(sortOption.displayName)
-                    }
-                    DropdownMenu(
-                        expanded = sortExpanded,
-                        onDismissRequest = { sortExpanded = false }
-                    ) {
-                        SortOption.entries.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option.displayName) },
-                                onClick = {
-                                    viewModel.setSortOption(option)
-                                    sortExpanded = false
-                                }
-                            )
-                        }
-                    }
+            var sortExpanded by remember { mutableStateOf(false) }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Sort:",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.width(4.dp))
+                TextButton(onClick = { sortExpanded = true }) {
+                    Text(sortOption.displayName)
                 }
-            }
-
-            if (sessions.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                DropdownMenu(
+                    expanded = sortExpanded,
+                    onDismissRequest = { sortExpanded = false }
                 ) {
-                    Text(
-                        text = "No logging sessions yet.\nStart logging from a sensor to see it here.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(sessions, key = { it.id }) { session ->
-                        SessionItem(session = session)
+                    SortOption.entries.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option.displayName) },
+                            onClick = {
+                                onSortOptionChanged(option)
+                                sortExpanded = false
+                            }
+                        )
                     }
                 }
             }
         }
-    }
-}
 
-@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
-@Composable
-private fun PreviewSessionItem() {
-    SensorAppTheme {
-        SessionItem(
-            session = LogSession(
-                id = 1,
-                sensorType = SensorType.ACCELEROMETER,
-                startTimeMs = System.currentTimeMillis() - 154000,
-                endTimeMs = System.currentTimeMillis(),
-                readingCount = 120,
-                summary = "2m 34s log"
-            )
-        )
+        if (sessions.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No logging sessions yet.\nStart logging from a sensor to see it here.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(sessions, key = { it.id }) { session ->
+                    SessionItem(session = session)
+                }
+            }
+        }
     }
 }
 
@@ -275,4 +273,105 @@ private fun SessionItem(session: LogSession) {
 private fun formatTimestamp(ms: Long): String {
     val sdf = java.text.SimpleDateFormat("MMM dd HH:mm", java.util.Locale.getDefault())
     return sdf.format(java.util.Date(ms))
+}
+
+private val mockSessions = listOf(
+    LogSession(
+        id = 1, sensorType = SensorType.ACCELEROMETER,
+        startTimeMs = System.currentTimeMillis() - 154000,
+        endTimeMs = System.currentTimeMillis(), readingCount = 120, summary = "2m 34s log"
+    ),
+    LogSession(
+        id = 2, sensorType = SensorType.GYROSCOPE,
+        startTimeMs = System.currentTimeMillis() - 3600000,
+        endTimeMs = System.currentTimeMillis() - 3000000, readingCount = 1800, summary = "10m log"
+    ),
+    LogSession(
+        id = 3, sensorType = SensorType.LIGHT,
+        startTimeMs = System.currentTimeMillis() - 86400000,
+        endTimeMs = System.currentTimeMillis() - 85000000, readingCount = 500, summary = "23m log"
+    ),
+    LogSession(
+        id = 4, sensorType = SensorType.MAGNETOMETER,
+        startTimeMs = System.currentTimeMillis() - 180000,
+        endTimeMs = null, readingCount = 60, summary = "In progress"
+    )
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewHistoryScreen() {
+    SensorAppTheme {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text("History") },
+                    navigationIcon = {
+                        IconButton(onClick = {}) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        TextButton(enabled = true, onClick = {}) {
+                            Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Clear all")
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            }
+        ) { padding ->
+            HistoryScreenContent(
+                sessions = mockSessions,
+                searchQuery = "",
+                sortOption = SortOption.DATE_NEWEST,
+                onSearchQueryChanged = {},
+                onSortOptionChanged = {},
+                modifier = Modifier.padding(padding)
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewHistoryScreenEmpty() {
+    SensorAppTheme {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text("History") },
+                    navigationIcon = {
+                        IconButton(onClick = {}) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        TextButton(enabled = false, onClick = {}) {
+                            Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("Clear all")
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            }
+        ) { padding ->
+            HistoryScreenContent(
+                sessions = emptyList(),
+                searchQuery = "",
+                sortOption = SortOption.DATE_NEWEST,
+                onSearchQueryChanged = {},
+                onSortOptionChanged = {},
+                modifier = Modifier.padding(padding)
+            )
+        }
+    }
 }

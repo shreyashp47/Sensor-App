@@ -51,7 +51,6 @@ fun SettingsScreen(
 ) {
     val selectedDelay by viewModel.selectedDelay.collectAsStateWithLifecycle()
     val totalRows by viewModel.totalRows.collectAsStateWithLifecycle()
-    val uriHandler = LocalUriHandler.current
 
     Scaffold(
         topBar = {
@@ -68,141 +67,139 @@ fun SettingsScreen(
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
-        ) {
-            SettingsSection(title = "Polling Rate") {
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                ) {
-                    Column(modifier = Modifier.padding(8.dp)) {
-                        SettingsViewModel.delayOptions.forEach { (delay, label) ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { viewModel.setDelay(delay) }
-                                    .padding(vertical = 12.dp, horizontal = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                RadioButton(
-                                    selected = selectedDelay == delay,
-                                    onClick = { viewModel.setDelay(delay) }
-                                )
-                                Text(
-                                    text = label,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.padding(start = 12.dp)
-                                )
-                            }
-                            if (delay != SettingsViewModel.delayOptions.last().first) {
-                                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(24.dp))
-
-            SettingsSection(title = "Database Stats") {
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "Total rows",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = "$totalRows",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(24.dp))
-
-            SettingsSection(title = "Credits") {
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Code,
-                            contentDescription = null,
-                            modifier = Modifier.size(40.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(Modifier.height(12.dp))
-                        Text(
-                            text = "Built by",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "Shreyash Pattewar",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = "Mobile & AI Developer",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(Modifier.height(12.dp))
-                        TextButton(
-                            onClick = { uriHandler.openUri("https://shreyashp47.github.io/") }
-                        ) {
-                            Text("shreyashp47.github.io")
-                            Spacer(Modifier.width(4.dp))
-                            Icon(
-                                imageVector = Icons.Default.OpenInNew,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(32.dp))
-        }
+        SettingsScreenContent(
+            selectedDelay = selectedDelay,
+            totalRows = totalRows,
+            onDelayChanged = { viewModel.setDelay(it) },
+            modifier = Modifier.padding(padding)
+        )
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
 @Composable
-private fun PreviewSettingsSection() {
-    SensorAppTheme {
-        SettingsSection(title = "Sample Section") {
-            Text("Content here")
+private fun SettingsScreenContent(
+    selectedDelay: Int,
+    totalRows: Int,
+    onDelayChanged: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+        SettingsSection(title = "Polling Rate") {
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Column(modifier = Modifier.padding(8.dp)) {
+                    delayOptions.forEach { (delay, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onDelayChanged(delay) }
+                                .padding(vertical = 12.dp, horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedDelay == delay,
+                                onClick = { onDelayChanged(delay) }
+                            )
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(start = 12.dp)
+                            )
+                        }
+                        if (delay != delayOptions.last().first) {
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                        }
+                    }
+                }
+            }
         }
+
+        Spacer(Modifier.height(24.dp))
+
+        SettingsSection(title = "Database Stats") {
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Total rows",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        text = "$totalRows",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        SettingsSection(title = "Credits") {
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Code,
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = "Built by",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "Shreyash Pattewar",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Mobile & AI Developer",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = "shreyashp47.github.io",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(32.dp))
     }
 }
 
@@ -218,4 +215,41 @@ private fun SettingsSection(
         modifier = Modifier.padding(bottom = 8.dp)
     )
     content()
+}
+
+private val delayOptions = listOf(
+    0 to "FASTEST",
+    1 to "GAME",
+    2 to "UI",
+    3 to "NORMAL"
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewSettingsScreen() {
+    SensorAppTheme {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text("Settings") },
+                    navigationIcon = {
+                        IconButton(onClick = {}) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            }
+        ) { padding ->
+            SettingsScreenContent(
+                selectedDelay = 2,
+                totalRows = 15234,
+                onDelayChanged = {},
+                modifier = Modifier.padding(padding)
+            )
+        }
+    }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SensorApp</string>
+    <string name="app_name">Sensor</string>
     <string name="permission_dialog_title">Permission needed</string>
     <string name="permission_dialog_body_activity">To count your steps, SensorApp needs access to your physical activity. This data stays on your device and is never uploaded.</string>
     <string name="not_available">Not available on this device</string>

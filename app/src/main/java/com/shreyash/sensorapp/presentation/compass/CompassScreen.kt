@@ -50,11 +50,13 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
 import com.shreyash.sensorapp.presentation.theme.SensorGreen
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -97,67 +99,77 @@ fun CompassScreen(
             )
         }
     ) { padding ->
-        if (!isAvailable) {
-            Box(
+        CompassScreenContent(
+            heading = heading,
+            isAvailable = isAvailable,
+            modifier = Modifier.padding(padding)
+        )
+    }
+}
+
+@Composable
+private fun CompassScreenContent(
+    heading: Float,
+    isAvailable: Boolean,
+    modifier: Modifier = Modifier
+) {
+    if (!isAvailable) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Compass is not available.\nRequires accelerometer and magnetometer.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(32.dp)
+            )
+        }
+    } else {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            LiveIndicator()
+
+            Spacer(Modifier.height(24.dp))
+
+            CompassView(
+                heading = heading,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Compass is not available.\nRequires accelerometer and magnetometer.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(32.dp)
-                )
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                LiveIndicator()
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+            )
 
-                Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
 
-                CompassView(
-                    heading = heading,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                )
+            Text(
+                text = "${heading.roundToInt()}°",
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                maxLines = 1
+            )
 
-                Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(8.dp))
 
-                Text(
-                    text = "${heading.roundToInt()}°",
-                    style = MaterialTheme.typography.displayLarge,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1
-                )
+            Text(
+                text = directionFromHeading(heading),
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
 
-                Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
 
-                Text(
-                    text = directionFromHeading(heading),
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Spacer(Modifier.height(4.dp))
-
-                Text(
-                    text = "Magnetic North",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Text(
+                text = "Magnetic North",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -330,4 +342,62 @@ private fun directionFromHeading(heading: Float): String {
     )
     val index = ((heading + 11.25f) / 22.5f).toInt() % 16
     return directions[index]
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewCompassScreen() {
+    SensorAppTheme {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text("Compass") },
+                    navigationIcon = {
+                        IconButton(onClick = {}) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            }
+        ) { padding ->
+            CompassScreenContent(
+                heading = 45f,
+                isAvailable = true,
+                modifier = Modifier.padding(padding)
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewCompassScreenUnavailable() {
+    SensorAppTheme {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text("Compass") },
+                    navigationIcon = {
+                        IconButton(onClick = {}) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            }
+        ) { padding ->
+            CompassScreenContent(
+                heading = 0f,
+                isAvailable = false,
+                modifier = Modifier.padding(padding)
+            )
+        }
+    }
 }

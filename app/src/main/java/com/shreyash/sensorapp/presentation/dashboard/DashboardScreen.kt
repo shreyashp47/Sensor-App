@@ -75,14 +75,10 @@ fun DashboardScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val permissionHandler = rememberPermissionHandler(snackbarHostState)
 
-    val grouped = remember(sensorStates) {
-        sensorStates.groupBy { it.type.category }
-    }
-
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("SensorApp") },
+                title = { Text("Sensor") },
                 actions = {
                     IconButton(onClick = onNavigateToHistory) {
                         Icon(Icons.Default.History, contentDescription = "History")
@@ -98,45 +94,16 @@ fun DashboardScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            item(span = { GridItemSpan(2) }) {
-                CompassDashboardCard(onClick = onNavigateToCompass)
-            }
-
-            item(span = { GridItemSpan(2) }) {
-                Spacer(Modifier.height(4.dp))
-            }
-
-            SensorCategory.entries.forEach { category ->
-                val states = grouped[category] ?: return@forEach
-                if (states.isEmpty()) return@forEach
-
-                item(span = { GridItemSpan(2) }) {
-                    CategoryHeader(category = category)
+        DashboardScreenContent(
+            sensorStates = sensorStates,
+            onNavigateToDetail = { type ->
+                permissionHandler.checkAndRequest(type) {
+                    onNavigateToDetail(type)
                 }
-
-                items(states, key = { it.type }) { state ->
-                    SensorGridItem(
-                        state = state,
-                        onClick = {
-                            if (state.availability is SensorAvailability.Available) {
-                                permissionHandler.checkAndRequest(state.type) {
-                                    onNavigateToDetail(state.type)
-                                }
-                            }
-                        }
-                    )
-                }
-            }
-        }
+            },
+            onNavigateToCompass = onNavigateToCompass,
+            modifier = Modifier.padding(padding)
+        )
     }
 
     if (permissionHandler.showDialog) {
@@ -148,31 +115,51 @@ fun DashboardScreen(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
 @Composable
-private fun PreviewSensorGridItemAvailable() {
-    SensorAppTheme {
-        SensorGridItem(
-            state = SensorState(
-                type = SensorType.ACCELEROMETER,
-                availability = SensorAvailability.Available
-            ),
-            onClick = {}
-        )
+private fun DashboardScreenContent(
+    sensorStates: List<SensorState>,
+    onNavigateToDetail: (SensorType) -> Unit,
+    onNavigateToCompass: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val grouped = remember(sensorStates) {
+        sensorStates.groupBy { it.type.category }
     }
-}
 
-@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
-@Composable
-private fun PreviewSensorGridItemUnavailable() {
-    SensorAppTheme {
-        SensorGridItem(
-            state = SensorState(
-                type = SensorType.PROXIMITY,
-                availability = SensorAvailability.Unavailable
-            ),
-            onClick = {}
-        )
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        item(span = { GridItemSpan(2) }) {
+            CompassDashboardCard(onClick = onNavigateToCompass)
+        }
+
+        item(span = { GridItemSpan(2) }) {
+            Spacer(Modifier.height(4.dp))
+        }
+
+        SensorCategory.entries.forEach { category ->
+            val states = grouped[category] ?: return@forEach
+            if (states.isEmpty()) return@forEach
+
+            item(span = { GridItemSpan(2) }) {
+                CategoryHeader(category = category)
+            }
+
+            items(states, key = { it.type }) { state ->
+                SensorGridItem(
+                    state = state,
+                    onClick = {
+                        if (state.availability is SensorAvailability.Available) {
+                            onNavigateToDetail(state.type)
+                        }
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -348,6 +335,43 @@ private fun CompassDashboardCard(onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
+    }
+}
+
+private val mockSensorStates = SensorType.entries.map { type ->
+    SensorState(type = type, availability = SensorAvailability.Available)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewDashboardScreen() {
+    SensorAppTheme {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text("Sensor") },
+                    actions = {
+                        IconButton(onClick = {}) {
+                            Icon(Icons.Default.History, contentDescription = "History")
+                        }
+                        IconButton(onClick = {}) {
+                            Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            }
+        ) { padding ->
+            DashboardScreenContent(
+                sensorStates = mockSensorStates,
+                onNavigateToDetail = {},
+                onNavigateToCompass = {},
+                modifier = Modifier.padding(padding)
+            )
         }
     }
 }

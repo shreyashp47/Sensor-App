@@ -10,7 +10,7 @@
 
 Real-time Android sensor monitor. Live readings with scrolling charts, session-based logging, CSV export, and history tracking.
 
-**Package:** `com.shreyash.sensorapp` · **Dark mode only** · **v1.5**
+**Package:** `com.shreyash.sensorapp` · **Dark mode only** · **v1.7**
 
 <p align="center">
   <a href="https://play.google.com/store/apps/details?id=com.shreyash.sensorapp">
@@ -41,19 +41,21 @@ Kotlin · Jetpack Compose (Material 3) · Clean Architecture · Hilt · Room · 
 
 | Screen | Description |
 |--------|-------------|
-| **Dashboard** | 2-column grid grouped by category (Motion, Position, Environmental, Activity). Each sensor is a card with a colored icon circle, name, and live value. Unavailable sensors are dimmed with "Not available" — tap opens a bottom sheet explanation. |
+| **Dashboard** | 2-column grid grouped by category (Motion, Position, Environmental, Activity). Each sensor is a card with a colored icon circle, name, and live value. Unavailable sensors are dimmed with "Not available" — tap opens a bottom sheet explanation. Includes a **Compass** feature card at the top. |
+| **Compass** | Real-time tilt-compensated heading using accelerometer + magnetometer fusion. Canvas-drawn compass rose with cardinal/intercardinal labels, tick marks, and a diamond-shaped bicolor needle with smooth rotation animation. Digital heading display and direction name. |
 | **Sensor Detail** | Live axis values with units, a Canvas-drawn line chart (last 60 readings) with gradient fill and Y-axis labels. Tap the chart for a crosshair + value tooltip. Start/Stop Logging toggles Room persistence. Export CSV button saves to Downloads. |
 | **History** | One card per logging session (not individual readings) showing sensor icon, name, duration, and date. Search by sensor name, sort by newest/oldest/longest/shortest. Clear all with confirmation dialog. |
 | **Settings** | Polling rate (FASTEST/GAME/UI/NORMAL), database row count, and credits (Shreyash Pattewar — Mobile & AI Developer). |
 
 ## Previews
 
-| Dashboard | Sensor Detail | History | Settings |
-|-----------|--------------|---------|----------|
-| ![](previews/dashboard.png) | ![](previews/detail.png) | ![](previews/history.png) | ![](previews/settings.png) |
+| Dashboard | Compass | Sensor Detail | History | Settings |
+|-----------|---------|--------------|---------|----------|
+| ![](previews/dashboard.png) | ![](previews/compass.png) | ![](previews/detail.png) | ![](previews/history.png) | ![](previews/settings.png) |
 
 ## Key Features
 
+- **Compass** — tilt-compensated heading fusing accelerometer + magnetometer via `SensorManager.getRotationMatrix()`. Canvas-drawn rose with diamond needle and smooth animation.
 - **Just-in-time permissions** — never at launch. Step Counter requests `ACTIVITY_RECOGNITION` only on tap (API 29+).
 - **Lifecycle-aware** — sensor listeners unregistered on `ON_STOP`, re-registered on `ON_START`.
 - **Session logging** — each Start→Stop creates a `LogSession` in Room. Navigating back while logging ends the session automatically.
