@@ -15,6 +15,9 @@ on:
           - production
         default: alpha
 
+permissions:
+  contents: write
+
 jobs:
   lint:
     if: github.event_name == 'workflow_dispatch' || github.event.action != 'closed'
@@ -75,6 +78,22 @@ jobs:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: mkdir -p keystore_details && echo "$KEYSTORE_BASE64" | base64 -d > keystore_details/sensor.jks
 
+      - name: Bump version
+        id: bump
+        run: |
+          code=$(grep 'versionCode = ' app/build.gradle.kts | sed 's/.*versionCode = \([0-9]*\).*/\1/')
+          name=$(grep 'versionName = ' app/build.gradle.kts | sed 's/.*versionName = "\(.*\)".*/\1/')
+          new_code=$((code + 1))
+          IFS='.' read -ra PARTS <<< "$name"
+          major="${PARTS[0]}"
+          minor="${PARTS[1]}"
+          new_minor=$((minor + 1))
+          new_name="${major}.$(printf "%02d" $new_minor)"
+          sed -i "s/versionName = \".*\"/versionName = \"$new_name\"/" app/build.gradle.kts
+          sed -i "s/versionCode = .*/versionCode = $new_code/" app/build.gradle.kts
+          echo "new_version_code=$new_code" >> "$GITHUB_OUTPUT"
+          echo "new_version_name=$new_name" >> "$GITHUB_OUTPUT"
+
       - name: Build signed release AAB
         env:
           ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/keystore_details/sensor.jks
@@ -93,3 +112,10 @@ jobs:
           status: completed
           inAppUpdatePriority: 2
 
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app/build.gradle.kts
+          git commit -m "Bump version to ${{ steps.bump.outputs.new_version_name }} (${{ steps.bump.outputs.new_version_code }}) [skip ci]"
+          git push
