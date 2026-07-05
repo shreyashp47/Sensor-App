@@ -230,6 +230,7 @@ private fun CompassView(
     val outlineVariant = MaterialTheme.colorScheme.outlineVariant
     val onSurface = MaterialTheme.colorScheme.onSurface
     val primary = MaterialTheme.colorScheme.primary
+    val surface = MaterialTheme.colorScheme.surface
 
     Card(
         modifier = modifier,
@@ -319,7 +320,7 @@ private fun CompassView(
             drawPath(bottomIndicator, color = Color(0xFF444444))
 
             drawCircle(
-                color = MaterialTheme.colorScheme.surface,
+                color = surface,
                 radius = 6.dp.toPx(),
                 center = Offset(cx, cy)
             )
