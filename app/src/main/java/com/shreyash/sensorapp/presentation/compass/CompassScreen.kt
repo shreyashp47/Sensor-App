@@ -151,6 +151,16 @@ private fun CompassScreenContent(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            Spacer(Modifier.weight(1f))
+
+            Text(
+                text = "Accuracy may be affected by nearby magnetic fields, electronic devices, or metal objects.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
         }
     }
 }
@@ -265,7 +275,6 @@ private fun CompassView(
                 center = Offset(cx, cy)
             )
         }
-    }
 }
 
 private fun directionFromHeading(heading: Float): String {
