@@ -1,0 +1,91 @@
+name: Build
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4.2.2
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts', '**/gradle/libs.versions.toml', '**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Run lint
+        run: ./gradlew lint
+
+      - name: Assemble debug
+        run: ./gradlew assembleDebug
+
+      - name: Decode keystore
+        if: (github.event_name == 'pull_request' && github.event.pull_request.merged) || github.event_name == 'workflow_dispatch'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: mkdir -p keystore_details && echo "$KEYSTORE_BASE64" | base64 -d > keystore_details/sensor.jks
+
+      - name: Bump version
+        if: (github.event_name == 'pull_request' && github.event.pull_request.merged) || github.event_name == 'workflow_dispatch'
+        id: bump
+        run: |
+          code=$(grep 'versionCode = ' app/build.gradle.kts | sed 's/.*versionCode = \([0-9]*\).*/\1/')
+          name=$(grep 'versionName = ' app/build.gradle.kts | sed 's/.*versionName = "\(.*\)".*/\1/')
+          new_code=$((code + 1))
+          IFS='.' read -ra PARTS <<< "$name"
+          major="${PARTS[0]}"
+          minor="${PARTS[1]}"
+          new_minor=$((minor + 1))
+          new_name="${major}.$(printf "%02d" $new_minor)"
+          sed -i "s/versionName = \".*\"/versionName = \"$new_name\"/" app/build.gradle.kts
+          sed -i "s/versionCode = .*/versionCode = $new_code/" app/build.gradle.kts
+          echo "new_version_code=$new_code" >> "$GITHUB_OUTPUT"
+          echo "new_version_name=$new_name" >> "$GITHUB_OUTPUT"
+
+      - name: Build signed release AAB
+        if: (github.event_name == 'pull_request' && github.event.pull_request.merged) || github.event_name == 'workflow_dispatch'
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/keystore_details/sensor.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew bundleRelease
+
+      - name: Upload to Google Play
+        if: (github.event_name == 'pull_request' && github.event.pull_request.merged) || github.event_name == 'workflow_dispatch'
+        uses: r0adkll/upload-google-play@v1.1.5
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.shreyash.sensorapp
+          releaseFiles: app/build/outputs/bundle/release/app-release.aab
+          tracks: internal
+          status: completed
+          inAppUpdatePriority: 2
+
+      - name: Commit version bump
+        if: ((github.event_name == 'pull_request' && github.event.pull_request.merged) || github.event_name == 'workflow_dispatch') && steps.bump.outputs.new_version_name != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app/build.gradle.kts
+          git commit -m "Bump version to ${{ steps.bump.outputs.new_version_name }} (${{ steps.bump.outputs.new_version_code }}) [skip ci]"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
