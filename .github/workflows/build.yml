@@ -77,7 +77,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.shreyash.sensorapp
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
-          tracks: internal
+          tracks: alpha
           status: completed
           inAppUpdatePriority: 2
 
