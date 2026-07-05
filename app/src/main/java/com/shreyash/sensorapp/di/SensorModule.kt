@@ -2,6 +2,7 @@ package com.shreyash.sensorapp.di
 
 import android.content.Context
 import android.hardware.SensorManager
+import com.shreyash.sensorapp.data.sensor.HapticManager
 import com.shreyash.sensorapp.data.sensor.SensorDataSource
 import com.shreyash.sensorapp.data.repository.SensorRepositoryImpl
 import com.shreyash.sensorapp.domain.repository.SensorRepository

@@ -1,8 +1,8 @@
 package com.shreyash.sensorapp.presentation.detail
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shreyash.sensorapp.data.sensor.HapticManager
 import com.shreyash.sensorapp.domain.model.SensorReading
 import com.shreyash.sensorapp.domain.model.SensorType
 import com.shreyash.sensorapp.domain.usecase.LogSensorReadingUseCase
@@ -16,18 +16,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.sqrt
 
 @HiltViewModel
 class DetailViewModel @Inject constructor(
     private val observeSensorUseCase: ObserveSensorUseCase,
     private val logSensorReadingUseCase: LogSensorReadingUseCase,
     private val repository: SensorRepository,
-    savedStateHandle: SavedStateHandle
+    private val hapticManager: HapticManager
 ) : ViewModel() {
 
-    val sensorType: SensorType = SensorType.valueOf(
-        savedStateHandle.get<String>("sensorType") ?: "ACCELEROMETER"
-    )
+    private var _sensorType: SensorType = SensorType.ACCELEROMETER
+    val sensorType: SensorType get() = _sensorType
 
     private val _currentReading = MutableStateFlow<SensorReading?>(null)
     val currentReading: StateFlow<SensorReading?> = _currentReading.asStateFlow()
@@ -40,8 +40,13 @@ class DetailViewModel @Inject constructor(
 
     private var sensorJob: Job? = null
     private var currentSessionId: Long? = null
+    private var previousReading: SensorReading? = null
+    private var initialized = false
 
-    init {
+    fun initialize(sensorType: SensorType) {
+        if (initialized) return
+        initialized = true
+        _sensorType = sensorType
         startObserving()
     }
 
@@ -49,6 +54,9 @@ class DetailViewModel @Inject constructor(
         sensorJob?.cancel()
         sensorJob = viewModelScope.launch {
             observeSensorUseCase(sensorType).collect { reading ->
+                val prev = previousReading
+                previousReading = reading
+
                 _currentReading.value = reading
                 _chartReadings.update { buffer ->
                     (buffer + reading).takeLast(60)
@@ -56,7 +64,42 @@ class DetailViewModel @Inject constructor(
                 if (_isLogging.value) {
                     logSensorReadingUseCase(reading)
                 }
+
+                if (repository.isHapticEnabled()) {
+                    checkHapticTriggers(reading, prev)
+                }
             }
+        }
+    }
+
+    private fun checkHapticTriggers(reading: SensorReading, prev: SensorReading?) {
+        when (sensorType) {
+            SensorType.PROXIMITY -> {
+                val currVal = reading.values.getOrNull(0) ?: return
+                val prevVal = prev?.values?.getOrNull(0) ?: return
+                val currObstructed = currVal < 1f
+                val prevObstructed = prevVal < 1f
+                if (prevObstructed != currObstructed) {
+                    hapticManager.doubleTick()
+                }
+            }
+            SensorType.STEP_COUNTER -> {
+                val currVal = reading.values.getOrNull(0) ?: 0f
+                val prevVal = prev?.values?.getOrNull(0) ?: currVal
+                if (currVal > prevVal) {
+                    hapticManager.tick()
+                }
+            }
+            SensorType.GYROSCOPE -> {
+                val gx = reading.values.getOrNull(0) ?: 0f
+                val gy = reading.values.getOrNull(1) ?: 0f
+                val gz = reading.values.getOrNull(2) ?: 0f
+                val magnitude = sqrt((gx * gx + gy * gy + gz * gz).toDouble()).toFloat()
+                if (magnitude > 5f) {
+                    hapticManager.tick()
+                }
+            }
+            else -> {}
         }
     }
 
