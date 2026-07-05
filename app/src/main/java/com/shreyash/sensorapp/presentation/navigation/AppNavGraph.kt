@@ -2,14 +2,20 @@ package com.shreyash.sensorapp.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
-import com.shreyash.sensorapp.domain.model.SensorType
 import com.shreyash.sensorapp.presentation.compass.CompassScreen
 import com.shreyash.sensorapp.presentation.dashboard.DashboardScreen
-import com.shreyash.sensorapp.presentation.detail.SensorDetailScreen
+import com.shreyash.sensorapp.presentation.detail.AccelerometerScreen
+import com.shreyash.sensorapp.presentation.detail.GravityScreen
+import com.shreyash.sensorapp.presentation.detail.GyroscopeScreen
+import com.shreyash.sensorapp.presentation.detail.LightScreen
+import com.shreyash.sensorapp.presentation.detail.LinearAccelerationScreen
+import com.shreyash.sensorapp.presentation.detail.MagnetometerScreen
+import com.shreyash.sensorapp.presentation.detail.PressureScreen
+import com.shreyash.sensorapp.presentation.detail.ProximityScreen
+import com.shreyash.sensorapp.presentation.detail.RotationVectorScreen
+import com.shreyash.sensorapp.presentation.detail.StepCounterScreen
 import com.shreyash.sensorapp.presentation.history.HistoryScreen
 import com.shreyash.sensorapp.presentation.settings.SettingsScreen
 
@@ -22,7 +28,7 @@ fun AppNavGraph(navController: NavHostController) {
         composable(Route.Dashboard.route) {
             DashboardScreen(
                 onNavigateToDetail = { sensorType ->
-                    navController.navigate(Route.SensorDetail(sensorType).route)
+                    navController.navigate(sensorType.toRoute())
                 },
                 onNavigateToCompass = { navController.navigate(Route.Compass.route) },
                 onNavigateToHistory = { navController.navigate(Route.History.route) },
@@ -30,18 +36,44 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        composable(
-            route = Route.SensorDetail.ROUTE_PATTERN,
-            arguments = listOf(
-                navArgument("sensorType") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val sensorTypeName = backStackEntry.arguments?.getString("sensorType")
-            val sensorType = SensorType.valueOf(sensorTypeName ?: "ACCELEROMETER")
-            SensorDetailScreen(
-                sensorType = sensorType,
-                onBack = { navController.popBackStack() }
-            )
+        composable(Route.Accelerometer.route) {
+            AccelerometerScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Route.Gyroscope.route) {
+            GyroscopeScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Route.LinearAcceleration.route) {
+            LinearAccelerationScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Route.Magnetometer.route) {
+            MagnetometerScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Route.Gravity.route) {
+            GravityScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Route.RotationVector.route) {
+            RotationVectorScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Route.Light.route) {
+            LightScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Route.Proximity.route) {
+            ProximityScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Route.Pressure.route) {
+            PressureScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Route.StepCounter.route) {
+            StepCounterScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Route.History.route) {
