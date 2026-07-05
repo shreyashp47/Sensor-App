@@ -236,6 +236,18 @@ private fun SensorDetailScreenContent(
             textAlign = TextAlign.Center
         )
 
+        if (sensorType == SensorType.PROXIMITY) {
+            Spacer(Modifier.height(16.dp))
+
+            Text(
+                text = "Cover the top of the device to trigger the sensor. " +
+                        "The proximity sensor is typically used to detect when the phone is held to the ear during a call.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                textAlign = TextAlign.Center
+            )
+        }
+
         Spacer(Modifier.height(16.dp))
     }
 }
@@ -294,9 +306,7 @@ private fun LiveValueDisplay(
 
     if (sensorType == SensorType.PROXIMITY) {
         val value = reading.values.firstOrNull() ?: 0f
-        val maxRange = 8f
-        val fraction = (value / maxRange).coerceIn(0f, 1f)
-        val isNear = value < 1f
+        val isObstructed = value < 1f
 
         Card(
             colors = CardDefaults.cardColors(
@@ -307,70 +317,24 @@ private fun LiveValueDisplay(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
+                    .padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = if (isNear) "NEAR" else "FAR",
-                    style = MaterialTheme.typography.displayMedium,
+                    text = if (isObstructed) "OBSTRUCTED" else "CLEAR",
+                    style = MaterialTheme.typography.displayLarge,
                     fontWeight = FontWeight.Bold,
-                    color = if (isNear) Color(0xFFFF6B6B) else SensorGreen
+                    color = if (isObstructed) Color(0xFFFF6B6B) else SensorGreen
                 )
-
-                Spacer(Modifier.height(4.dp))
-
-                Text(
-                    text = "Object is ${if (isNear) "close to" else "away from"} the screen",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(Modifier.height(16.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(12.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(fraction)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(
-                                if (isNear) Color(0xFFFF6B6B)
-                                else SensorGreen
-                            )
-                    )
-                }
 
                 Spacer(Modifier.height(8.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "0 cm",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "${maxRange.toInt()} cm",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Spacer(Modifier.height(12.dp))
-
                 Text(
-                    text = "${formatLargeValue(value)} cm",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    text = if (isObstructed) "An object is covering the sensor"
+                    else "No object detected near the sensor",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
                 )
             }
         }
