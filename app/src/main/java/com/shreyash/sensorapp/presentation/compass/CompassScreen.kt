@@ -1,30 +1,18 @@
 package com.shreyash.sensorapp.presentation.compass
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,11 +28,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -57,7 +43,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
-import com.shreyash.sensorapp.presentation.theme.SensorGreen
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
@@ -133,10 +118,6 @@ private fun CompassScreenContent(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LiveIndicator()
-
-            Spacer(Modifier.height(24.dp))
-
             CompassView(
                 heading = heading,
                 modifier = Modifier
@@ -170,43 +151,15 @@ private fun CompassScreenContent(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        }
-    }
-}
 
-@Composable
-private fun LiveIndicator() {
-    val infiniteTransition = rememberInfiniteTransition()
-    val alpha by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 0.3f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = SensorGreen.copy(alpha = 0.15f)
-        )
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(10.dp)
-                    .clip(CircleShape)
-                    .background(SensorGreen.copy(alpha = alpha))
-            )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.weight(1f))
+
             Text(
-                text = "LIVE",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = SensorGreen
+                text = "Accuracy may be affected by nearby magnetic fields, electronic devices, or metal objects.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
         }
     }
@@ -230,16 +183,9 @@ private fun CompassView(
     val outlineVariant = MaterialTheme.colorScheme.outlineVariant
     val onSurface = MaterialTheme.colorScheme.onSurface
     val primary = MaterialTheme.colorScheme.primary
+    val surface = MaterialTheme.colorScheme.surface
 
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize().padding(28.dp)) {
+    Canvas(modifier = modifier.padding(8.dp)) {
             val cx = size.width / 2f
             val cy = size.height / 2f
             val r = minOf(cx, cy)
@@ -319,7 +265,7 @@ private fun CompassView(
             drawPath(bottomIndicator, color = Color(0xFF444444))
 
             drawCircle(
-                color = MaterialTheme.colorScheme.surface,
+                color = surface,
                 radius = 6.dp.toPx(),
                 center = Offset(cx, cy)
             )
@@ -329,7 +275,6 @@ private fun CompassView(
                 center = Offset(cx, cy)
             )
         }
-    }
 }
 
 private fun directionFromHeading(heading: Float): String {
