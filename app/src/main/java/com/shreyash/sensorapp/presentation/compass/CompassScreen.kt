@@ -230,7 +230,6 @@ private fun CompassView(
     val outlineVariant = MaterialTheme.colorScheme.outlineVariant
     val onSurface = MaterialTheme.colorScheme.onSurface
     val primary = MaterialTheme.colorScheme.primary
-    val surface = MaterialTheme.colorScheme.surface
 
     Card(
         modifier = modifier,
@@ -244,6 +243,10 @@ private fun CompassView(
             val cx = size.width / 2f
             val cy = size.height / 2f
             val r = minOf(cx, cy)
+
+            val canvas = drawContext.canvas.nativeCanvas
+            canvas.save()
+            canvas.rotate(-animatedHeading.value, cx, cy)
 
             drawCircle(color = outlineVariant, radius = r, center = Offset(cx, cy), style = Stroke(2.dp.toPx()))
             drawCircle(color = outlineVariant.copy(alpha = 0.2f), radius = r * 0.96f, center = Offset(cx, cy), style = Stroke(1.dp.toPx()))
@@ -265,7 +268,6 @@ private fun CompassView(
                 )
             }
 
-            val labelR = r * 0.72f
             val paint = android.graphics.Paint().apply {
                 textSize = 34f
                 textAlign = android.graphics.Paint.Align.CENTER
@@ -273,6 +275,7 @@ private fun CompassView(
                 isFakeBoldText = true
             }
 
+            val labelR = r * 0.72f
             val compassLabels = listOf(
                 "N" to 0f, "NE" to 45f, "E" to 90f, "SE" to 135f,
                 "S" to 180f, "SW" to 225f, "W" to 270f, "NW" to 315f
@@ -283,52 +286,46 @@ private fun CompassView(
                 val ly = cy - labelR * cos(a)
                 paint.color = if (label == "N") android.graphics.Color.rgb(255, 80, 80)
                 else android.graphics.Color.WHITE
-                drawContext.canvas.nativeCanvas.drawText(label, lx, ly + 12f, paint)
+                canvas.drawText(label, lx, ly + 12f, paint)
             }
 
-            val headingRad = Math.toRadians(animatedHeading.value.toDouble()).toFloat()
-            val northLen = r * 0.55f
-            val southLen = r * 0.3f
-            val needleWidth = r * 0.12f
+            val degreeLabels = listOf(30, 60, 120, 150, 210, 240, 300, 330)
+            paint.textSize = 20f
+            paint.alpha = 120
+            val degreeLabelR = r * 0.76f
+            for (deg in degreeLabels) {
+                val a = Math.toRadians(deg.toDouble()).toFloat()
+                val lx = cx + degreeLabelR * sin(a)
+                val ly = cy - degreeLabelR * cos(a)
+                canvas.drawText("$deg", lx, ly + 7f, paint)
+            }
 
-            val sinH = sin(headingRad)
-            val cosH = cos(headingRad)
+            canvas.restore()
 
-            val nTip = Offset(cx + northLen * sinH, cy - northLen * cosH)
-            val sTip = Offset(cx - southLen * sinH, cy + southLen * cosH)
-            val eWing = Offset(cx + needleWidth * cosH, cy + needleWidth * sinH)
-            val wWing = Offset(cx - needleWidth * cosH, cy - needleWidth * sinH)
-
-            val northPath = Path().apply {
-                moveTo(nTip.x, nTip.y)
-                lineTo(eWing.x, eWing.y)
-                lineTo(wWing.x, wWing.y)
+            val topIndicator = Path().apply {
+                moveTo(cx, cy - r * 0.9f)
+                lineTo(cx - r * 0.08f, cy - r * 0.78f)
+                lineTo(cx + r * 0.08f, cy - r * 0.78f)
                 close()
             }
-            val southPath = Path().apply {
-                moveTo(sTip.x, sTip.y)
-                lineTo(eWing.x, eWing.y)
-                lineTo(wWing.x, wWing.y)
+            drawPath(topIndicator, color = Color(0xFFFF4444))
+
+            val bottomIndicator = Path().apply {
+                moveTo(cx, cy + r * 0.9f)
+                lineTo(cx - r * 0.06f, cy + r * 0.78f)
+                lineTo(cx + r * 0.06f, cy + r * 0.78f)
                 close()
             }
-
-            drawPath(northPath, color = Color(0xFFFF4444))
-            drawPath(southPath, color = Color(0xFFDDDDDD))
+            drawPath(bottomIndicator, color = Color(0xFF444444))
 
             drawCircle(
-                color = Color(0xFFFF4444),
-                radius = 3.dp.toPx(),
-                center = nTip
-            )
-
-            drawCircle(
-                color = surface,
-                radius = 7.dp.toPx(),
+                color = MaterialTheme.colorScheme.surface,
+                radius = 6.dp.toPx(),
                 center = Offset(cx, cy)
             )
             drawCircle(
                 color = primary,
-                radius = 4.dp.toPx(),
+                radius = 3.dp.toPx(),
                 center = Offset(cx, cy)
             )
         }
