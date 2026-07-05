@@ -236,20 +236,35 @@ private fun SensorDetailScreenContent(
             textAlign = TextAlign.Center
         )
 
-        if (sensorType == SensorType.PROXIMITY) {
-            Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
 
-            Text(
-                text = "Cover the top of the device to trigger the sensor. " +
-                        "The proximity sensor is typically used to detect when the phone is held to the ear during a call.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                textAlign = TextAlign.Center
-            )
-        }
+        SensorUsageHint(sensorType = sensorType)
 
         Spacer(Modifier.height(16.dp))
     }
+}
+
+@Composable
+private fun SensorUsageHint(sensorType: SensorType) {
+    val hint = when (sensorType) {
+        SensorType.ACCELEROMETER -> "Tilt or shake the device to see acceleration forces change across X, Y, and Z axes."
+        SensorType.GYROSCOPE -> "Rotate the device to measure the rate of rotation around each axis."
+        SensorType.LINEAR_ACCELERATION -> "Move the device quickly to measure acceleration excluding gravity."
+        SensorType.MAGNETOMETER -> "Move the device near a metal object or wave it in a figure-8 pattern to test."
+        SensorType.GRAVITY -> "Tilt the device to see how gravity distributes across each axis."
+        SensorType.ROTATION_VECTOR -> "Rotate the device to observe orientation changes relative to the world."
+        SensorType.LIGHT -> "Cover and uncover the light sensor (usually near the front camera) to see lux level changes."
+        SensorType.PROXIMITY -> "Cover the top of the device to trigger the sensor. Used to detect when the phone is held to the ear."
+        SensorType.PRESSURE -> "Ambient air pressure changes with altitude. Try moving to a different floor or elevation."
+        SensorType.STEP_COUNTER -> "Walk or simulate steps to see the step count increment in real time."
+    }
+
+    Text(
+        text = hint,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+        textAlign = TextAlign.Center
+    )
 }
 
 @Composable
@@ -304,7 +319,159 @@ private fun LiveValueDisplay(
         return
     }
 
-    if (sensorType == SensorType.PROXIMITY) {
+    if (sensorType == SensorType.PRESSURE) {
+        val value = reading.values.firstOrNull() ?: 0f
+        val condition = when {
+            value < 980f -> "STORM"
+            value < 1010f -> "RAIN"
+            value < 1025f -> "NORMAL"
+            else -> "HIGH"
+        }
+        val conditionColor = when (condition) {
+            "STORM" -> Color(0xFFE53935)
+            "RAIN" -> Color(0xFF42A5F5)
+            "NORMAL" -> SensorGreen
+            else -> Color(0xFFFFB300)
+        }
+
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            ),
+            shape = RoundedCornerShape(24.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = condition,
+                    style = MaterialTheme.typography.displayLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = conditionColor
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                Text(
+                    text = when (condition) {
+                        "STORM" -> "Very low pressure — stormy weather likely"
+                        "RAIN" -> "Low pressure — rain or unsettled weather"
+                        "NORMAL" -> "Standard atmospheric pressure"
+                        else -> "High pressure — fair and stable weather"
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Text(
+                    text = "${formatLargeValue(value)} hPa",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                Text(
+                    text = "Sea level: 1013.25 hPa",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
+            }
+        }
+    } else if (sensorType == SensorType.LIGHT) {
+        val value = reading.values.firstOrNull() ?: 0f
+        val level = when {
+            value <= 1f -> "DARK"
+            value <= 50f -> "DIM"
+            value <= 500f -> "INDOOR"
+            value <= 10000f -> "OUTDOOR"
+            else -> "SUNLIGHT"
+        }
+        val levelColor = when (level) {
+            "DARK" -> Color(0xFF6B6B6B)
+            "DIM" -> Color(0xFF9E9E9E)
+            "INDOOR" -> Color(0xFFFFD54F)
+            "OUTDOOR" -> Color(0xFFFFB300)
+            else -> Color(0xFFFF6F00)
+        }
+        val fraction = (value / 50000f).coerceIn(0f, 1f)
+
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            ),
+            shape = RoundedCornerShape(24.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = level,
+                    style = MaterialTheme.typography.displayLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = levelColor
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                Text(
+                    text = when (level) {
+                        "DARK" -> "Very little or no light detected"
+                        "DIM" -> "Low light conditions, like a dimly lit room"
+                        "INDOOR" -> "Typical indoor lighting level"
+                        "OUTDOOR" -> "Outdoor conditions, cloudy or shaded"
+                        else -> "Bright direct sunlight"
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(12.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(fraction)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(
+                                Brush.horizontalGradient(listOf(
+                                    Color(0xFF6B6B6B),
+                                    Color(0xFFFFD54F),
+                                    Color(0xFFFF6F00)
+                                ))
+                            )
+                    )
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                Text(
+                    text = "${formatLargeValue(value)} lx",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    } else if (sensorType == SensorType.PROXIMITY) {
         val value = reading.values.firstOrNull() ?: 0f
         val isObstructed = value < 1f
 
