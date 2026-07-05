@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -51,6 +52,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -91,6 +93,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedWriter
 import java.io.OutputStreamWriter
+import kotlin.math.cos
+import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -226,6 +230,18 @@ private fun SensorDetailScreenContent(
         )
 
         Spacer(Modifier.height(12.dp))
+
+        if (sensorType == SensorType.GYROSCOPE && currentReading != null) {
+            GyroscopeCube(
+                reading = currentReading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(16.dp)
+            )
+
+            Spacer(Modifier.height(12.dp))
+        }
 
         Text(
             text = "X: ${formatDetailValue(currentReading?.values?.getOrNull(0))} ${sensorType.unitX}" +
@@ -892,6 +908,111 @@ private fun PreviewSensorDetailScreen() {
                 chartReadings = mockChartReadings,
                 modifier = Modifier.padding(padding)
             )
+        }
+    }
+}
+
+@Composable
+private fun GyroscopeCube(
+    reading: SensorReading,
+    modifier: Modifier = Modifier
+) {
+    val gx = reading.values.getOrNull(0) ?: 0f
+    val gy = reading.values.getOrNull(1) ?: 0f
+    val gz = reading.values.getOrNull(2) ?: 0f
+
+    val rotationX = remember { Animatable(0f) }
+    val rotationY = remember { Animatable(0f) }
+    val rotationZ = remember { Animatable(0f) }
+
+    LaunchedEffect(gx, gy, gz) {
+        rotationX.animateTo(rotationX.value + gx * 0.05f, tween(100))
+        rotationY.animateTo(rotationY.value + gy * 0.05f, tween(100))
+        rotationZ.animateTo(rotationZ.value + gz * 0.05f, tween(100))
+    }
+
+    val primary = MaterialTheme.colorScheme.primary
+
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        ),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = modifier,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "3D Visualization",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val cx = size.width / 2f
+                val cy = size.height / 2f
+                val s = minOf(cx, cy) * 0.6f
+
+                val rx = rotationX.value
+                val ry = rotationY.value
+                val rz = rotationZ.value
+
+                val vertices = listOf(
+                    floatArrayOf(-1f, -1f, -1f), floatArrayOf(1f, -1f, -1f),
+                    floatArrayOf(1f, -1f, 1f), floatArrayOf(-1f, -1f, 1f),
+                    floatArrayOf(-1f, 1f, -1f), floatArrayOf(1f, 1f, -1f),
+                    floatArrayOf(1f, 1f, 1f), floatArrayOf(-1f, 1f, 1f)
+                )
+
+                val projected = vertices.map { v ->
+                    var x = v[0]; var y = v[1]; var z = v[2]
+
+                    val rxRad = Math.toRadians(rx.toDouble()).toFloat()
+                    val ryRad = Math.toRadians(ry.toDouble()).toFloat()
+                    val rzRad = Math.toRadians(rz.toDouble()).toFloat()
+
+                    val cosX = cos(rxRad); val sinX = sin(rxRad)
+                    val cosY = cos(ryRad); val sinY = sin(ryRad)
+                    val cosZ = cos(rzRad); val sinZ = sin(rzRad)
+
+                    val y1 = y * cosX - z * sinX
+                    val z1 = y * sinX + z * cosX
+                    y = y1; z = z1
+
+                    val x1 = x * cosY + z * sinY
+                    val z2 = -x * sinY + z * cosY
+                    x = x1; z = z2
+
+                    val x2 = x * cosZ - y * sinZ
+                    val y2 = x * sinZ + y * cosZ
+                    x = x2; y = y2
+
+                    Offset(cx + x * s, cy + y * s)
+                }
+
+                val edges = listOf(
+                    0 to 1, 1 to 2, 2 to 3, 3 to 0,
+                    4 to 5, 5 to 6, 6 to 7, 7 to 4,
+                    0 to 4, 1 to 5, 2 to 6, 3 to 7
+                )
+
+                for ((i, j) in edges) {
+                    val zAvg = (listOf(vertices[i][2], vertices[j][2]).average()).toFloat()
+                    val alpha = ((zAvg + 1f) / 2f).coerceIn(0.3f, 1f)
+                    drawLine(
+                        color = primary.copy(alpha = alpha),
+                        start = projected[i],
+                        end = projected[j],
+                        strokeWidth = 2.dp.toPx()
+                    )
+                }
+
+                for (v in projected) {
+                    drawCircle(color = primary, radius = 3.dp.toPx(), center = v)
+                }
+            }
         }
     }
 }
