@@ -27,6 +27,9 @@ class SensorRepositoryImpl @Inject constructor(
     @Volatile
     private var currentDelay: Int = android.hardware.SensorManager.SENSOR_DELAY_UI
 
+    @Volatile
+    private var hapticEnabled: Boolean = true
+
     override fun observeSensor(sensorType: SensorType): Flow<SensorReading> {
         return sensorDataSource.observeSensor(sensorType, currentDelay)
     }
@@ -113,6 +116,12 @@ class SensorRepositoryImpl @Inject constructor(
 
     override suspend fun setDelay(delay: Int) {
         currentDelay = delay
+    }
+
+    override fun isHapticEnabled(): Boolean = hapticEnabled
+
+    override fun setHapticEnabled(enabled: Boolean) {
+        hapticEnabled = enabled
     }
 }
 

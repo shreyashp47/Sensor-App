@@ -28,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -51,6 +52,7 @@ fun SettingsScreen(
 ) {
     val selectedDelay by viewModel.selectedDelay.collectAsStateWithLifecycle()
     val totalRows by viewModel.totalRows.collectAsStateWithLifecycle()
+    val hapticEnabled by viewModel.hapticEnabled.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -70,7 +72,9 @@ fun SettingsScreen(
         SettingsScreenContent(
             selectedDelay = selectedDelay,
             totalRows = totalRows,
+            hapticEnabled = hapticEnabled,
             onDelayChanged = { viewModel.setDelay(it) },
+            onHapticToggle = { viewModel.setHapticEnabled(it) },
             modifier = Modifier.padding(padding)
         )
     }
@@ -80,7 +84,9 @@ fun SettingsScreen(
 private fun SettingsScreenContent(
     selectedDelay: Int,
     totalRows: Int,
+    hapticEnabled: Boolean,
     onDelayChanged: (Int) -> Unit,
+    onHapticToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -119,6 +125,43 @@ private fun SettingsScreenContent(
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         }
                     }
+                }
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        SettingsSection(title = "Haptic Feedback") {
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onHapticToggle(!hapticEnabled) }
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Sensor haptics",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Text(
+                            text = "Vibrate on proximity change, step count, and fast rotation",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    Switch(
+                        checked = hapticEnabled,
+                        onCheckedChange = onHapticToggle
+                    )
                 }
             }
         }
@@ -247,7 +290,9 @@ private fun PreviewSettingsScreen() {
             SettingsScreenContent(
                 selectedDelay = 2,
                 totalRows = 15234,
+                hapticEnabled = true,
                 onDelayChanged = {},
+                onHapticToggle = {},
                 modifier = Modifier.padding(padding)
             )
         }

@@ -34,4 +34,8 @@ interface SensorRepository {
     suspend fun getDelay(): Int
 
     suspend fun setDelay(delay: Int)
+
+    fun isHapticEnabled(): Boolean
+
+    fun setHapticEnabled(enabled: Boolean)
 }

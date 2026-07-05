@@ -21,10 +21,14 @@ class SettingsViewModel @Inject constructor(
     private val _totalRows = MutableStateFlow(0)
     val totalRows: StateFlow<Int> = _totalRows.asStateFlow()
 
+    private val _hapticEnabled = MutableStateFlow(true)
+    val hapticEnabled: StateFlow<Boolean> = _hapticEnabled.asStateFlow()
+
     init {
         viewModelScope.launch {
             _selectedDelay.value = repository.getDelay()
             _totalRows.value = repository.getTotalRowCount()
+            _hapticEnabled.value = repository.isHapticEnabled()
         }
     }
 
@@ -32,6 +36,13 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             repository.setDelay(delay)
             _selectedDelay.value = delay
+        }
+    }
+
+    fun setHapticEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            repository.setHapticEnabled(enabled)
+            _hapticEnabled.value = enabled
         }
     }
 
