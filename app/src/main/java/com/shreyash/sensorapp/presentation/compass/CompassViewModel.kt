@@ -24,6 +24,12 @@ class CompassViewModel @Inject constructor(
     private val _heading = MutableStateFlow(0f)
     val heading: StateFlow<Float> = _heading.asStateFlow()
 
+    private val _pitch = MutableStateFlow(0f)
+    val pitch: StateFlow<Float> = _pitch.asStateFlow()
+
+    private val _roll = MutableStateFlow(0f)
+    val roll: StateFlow<Float> = _roll.asStateFlow()
+
     private val _isAvailable = MutableStateFlow(true)
     val isAvailable: StateFlow<Boolean> = _isAvailable.asStateFlow()
 
@@ -48,9 +54,11 @@ class CompassViewModel @Inject constructor(
             combine(
                 repository.observeSensor(SensorType.ACCELEROMETER),
                 repository.observeSensor(SensorType.MAGNETOMETER),
-                ::computeHeading
-            ).collect { heading ->
-                _heading.value = heading
+                ::computeOrientation
+            ).collect { (h, p, r) ->
+                _heading.value = h
+                _pitch.value = p
+                _roll.value = r
             }
         }
     }
@@ -60,7 +68,7 @@ class CompassViewModel @Inject constructor(
         sensorJob = null
     }
 
-    private fun computeHeading(accel: SensorReading, mag: SensorReading): Float {
+    private fun computeOrientation(accel: SensorReading, mag: SensorReading): Triple<Float, Float, Float> {
         val rotationMatrix = FloatArray(9)
         val success = SensorManager.getRotationMatrix(
             rotationMatrix, null,
@@ -71,9 +79,12 @@ class CompassViewModel @Inject constructor(
             val orientation = FloatArray(3)
             SensorManager.getOrientation(rotationMatrix, orientation)
             val azimuthDeg = Math.toDegrees(orientation[0].toDouble()).toFloat()
-            return (azimuthDeg + 360) % 360
+            val heading = (azimuthDeg + 360) % 360
+            val pitchDeg = Math.toDegrees(orientation[1].toDouble()).toFloat()
+            val rollDeg = Math.toDegrees(orientation[2].toDouble()).toFloat()
+            return Triple(heading, pitchDeg, rollDeg)
         }
-        return _heading.value
+        return Triple(_heading.value, _pitch.value, _roll.value)
     }
 
     override fun onCleared() {

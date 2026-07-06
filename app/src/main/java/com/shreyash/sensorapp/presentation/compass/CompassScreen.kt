@@ -43,9 +43,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,6 +56,8 @@ fun CompassScreen(
     viewModel: CompassViewModel = hiltViewModel()
 ) {
     val heading by viewModel.heading.collectAsStateWithLifecycle()
+    val pitch by viewModel.pitch.collectAsStateWithLifecycle()
+    val roll by viewModel.roll.collectAsStateWithLifecycle()
     val isAvailable by viewModel.isAvailable.collectAsStateWithLifecycle()
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -86,6 +90,8 @@ fun CompassScreen(
     ) { padding ->
         CompassScreenContent(
             heading = heading,
+            pitch = pitch,
+            roll = roll,
             isAvailable = isAvailable,
             modifier = Modifier.padding(padding)
         )
@@ -95,6 +101,8 @@ fun CompassScreen(
 @Composable
 private fun CompassScreenContent(
     heading: Float,
+    pitch: Float,
+    roll: Float,
     isAvailable: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -120,6 +128,8 @@ private fun CompassScreenContent(
         ) {
             CompassView(
                 heading = heading,
+                pitch = pitch,
+                roll = roll,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
@@ -168,9 +178,13 @@ private fun CompassScreenContent(
 @Composable
 private fun CompassView(
     heading: Float,
+    pitch: Float,
+    roll: Float,
     modifier: Modifier = Modifier
 ) {
     val animatedHeading = remember { Animatable(0f) }
+    val animatedPitch = remember { Animatable(0f) }
+    val animatedRoll = remember { Animatable(0f) }
 
     LaunchedEffect(heading) {
         val target = heading
@@ -178,6 +192,14 @@ private fun CompassView(
         val diff = (target - current + 540f) % 360f - 180f
         val adjustedTarget = current + diff
         animatedHeading.animateTo(adjustedTarget, tween(durationMillis = 80))
+    }
+
+    LaunchedEffect(pitch) {
+        animatedPitch.animateTo(pitch, tween(120))
+    }
+
+    LaunchedEffect(roll) {
+        animatedRoll.animateTo(roll, tween(120))
     }
 
     val outlineVariant = MaterialTheme.colorScheme.outlineVariant
@@ -323,15 +345,61 @@ private fun CompassView(
                 color = Color(0xFF444444)
             )
 
+            val levelR = 18.dp.toPx()
             drawCircle(
                 color = surface,
-                radius = 6.dp.toPx(),
+                radius = levelR,
                 center = Offset(cx, cy)
             )
             drawCircle(
-                color = primary,
-                radius = 3.dp.toPx(),
-                center = Offset(cx, cy)
+                color = outlineVariant.copy(alpha = 0.25f),
+                radius = levelR,
+                center = Offset(cx, cy),
+                style = Stroke(1.5.dp.toPx())
+            )
+            drawCircle(
+                color = outlineVariant.copy(alpha = 0.1f),
+                radius = levelR * 0.7f,
+                center = Offset(cx, cy),
+                style = Stroke(0.5.dp.toPx())
+            )
+            drawLine(
+                outlineVariant.copy(alpha = 0.15f),
+                Offset(cx - levelR, cy),
+                Offset(cx + levelR, cy),
+                strokeWidth = 0.5.dp.toPx()
+            )
+            drawLine(
+                outlineVariant.copy(alpha = 0.15f),
+                Offset(cx, cy - levelR),
+                Offset(cx, cy + levelR),
+                strokeWidth = 0.5.dp.toPx()
+            )
+
+            val maxTilt = 45f
+            val dx = (animatedRoll.value / maxTilt).coerceIn(-1f, 1f) * levelR * 0.65f
+            val dy = (animatedPitch.value / maxTilt).coerceIn(-1f, 1f) * levelR * 0.65f
+            val tiltMag = sqrt(dx * dx + dy * dy) / (levelR * 0.65f)
+            val dotColor = when {
+                tiltMag < 0.35f -> Color(0xFF4CAF50)
+                tiltMag < 0.7f -> Color(0xFFFFC107)
+                else -> Color(0xFFE53935)
+            }
+            val dotPos = Offset(cx + dx, cy + dy)
+            drawCircle(
+                color = dotColor.copy(alpha = 0.25f),
+                radius = 10.dp.toPx(),
+                center = dotPos
+            )
+            drawCircle(
+                color = Color.White.copy(alpha = 0.6f),
+                radius = 6.dp.toPx(),
+                center = dotPos
+            )
+            drawCircle(
+                color = dotColor,
+                radius = 4.5.dp.toPx(),
+                center = dotPos
             )
         }
 }
@@ -367,6 +435,8 @@ private fun PreviewCompassScreen() {
         ) { padding ->
             CompassScreenContent(
                 heading = 45f,
+                pitch = 5f,
+                roll = -3f,
                 isAvailable = true,
                 modifier = Modifier.padding(padding)
             )
@@ -396,6 +466,8 @@ private fun PreviewCompassScreenUnavailable() {
         ) { padding ->
             CompassScreenContent(
                 heading = 0f,
+                pitch = 0f,
+                roll = 0f,
                 isAvailable = false,
                 modifier = Modifier.padding(padding)
             )
