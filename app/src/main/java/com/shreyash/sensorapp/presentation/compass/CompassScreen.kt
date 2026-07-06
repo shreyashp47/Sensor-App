@@ -43,9 +43,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,6 +56,8 @@ fun CompassScreen(
     viewModel: CompassViewModel = hiltViewModel()
 ) {
     val heading by viewModel.heading.collectAsStateWithLifecycle()
+    val pitch by viewModel.pitch.collectAsStateWithLifecycle()
+    val roll by viewModel.roll.collectAsStateWithLifecycle()
     val isAvailable by viewModel.isAvailable.collectAsStateWithLifecycle()
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -86,6 +90,8 @@ fun CompassScreen(
     ) { padding ->
         CompassScreenContent(
             heading = heading,
+            pitch = pitch,
+            roll = roll,
             isAvailable = isAvailable,
             modifier = Modifier.padding(padding)
         )
@@ -95,6 +101,8 @@ fun CompassScreen(
 @Composable
 private fun CompassScreenContent(
     heading: Float,
+    pitch: Float,
+    roll: Float,
     isAvailable: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -120,6 +128,8 @@ private fun CompassScreenContent(
         ) {
             CompassView(
                 heading = heading,
+                pitch = pitch,
+                roll = roll,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
@@ -168,9 +178,13 @@ private fun CompassScreenContent(
 @Composable
 private fun CompassView(
     heading: Float,
+    pitch: Float,
+    roll: Float,
     modifier: Modifier = Modifier
 ) {
     val animatedHeading = remember { Animatable(0f) }
+    val animatedPitch = remember { Animatable(0f) }
+    val animatedRoll = remember { Animatable(0f) }
 
     LaunchedEffect(heading) {
         val target = heading
@@ -180,28 +194,38 @@ private fun CompassView(
         animatedHeading.animateTo(adjustedTarget, tween(durationMillis = 80))
     }
 
+    LaunchedEffect(pitch) {
+        animatedPitch.animateTo(pitch, tween(120))
+    }
+
+    LaunchedEffect(roll) {
+        animatedRoll.animateTo(roll, tween(120))
+    }
+
     val outlineVariant = MaterialTheme.colorScheme.outlineVariant
     val onSurface = MaterialTheme.colorScheme.onSurface
     val primary = MaterialTheme.colorScheme.primary
     val surface = MaterialTheme.colorScheme.surface
 
+    val topIndicatorColor = Color(0xFFFF4444)
+
     Canvas(modifier = modifier.padding(8.dp)) {
             val cx = size.width / 2f
             val cy = size.height / 2f
-            val r = minOf(cx, cy)
+            val canvasR = minOf(cx, cy) * 0.78f
 
             val canvas = drawContext.canvas.nativeCanvas
             canvas.save()
             canvas.rotate(-animatedHeading.value, cx, cy)
 
-            drawCircle(color = outlineVariant, radius = r, center = Offset(cx, cy), style = Stroke(2.dp.toPx()))
-            drawCircle(color = outlineVariant.copy(alpha = 0.2f), radius = r * 0.96f, center = Offset(cx, cy), style = Stroke(1.dp.toPx()))
+            drawCircle(color = outlineVariant, radius = canvasR, center = Offset(cx, cy), style = Stroke(2.dp.toPx()))
+            drawCircle(color = outlineVariant.copy(alpha = 0.2f), radius = canvasR * 0.96f, center = Offset(cx, cy), style = Stroke(1.dp.toPx()))
 
             for (i in 0 until 72) {
                 val angle = Math.toRadians((i * 5).toDouble()).toFloat()
                 val isMajor = i % 6 == 0
-                val tickLen = if (isMajor) r * 0.1f else r * 0.05f
-                val outerR = if (isMajor) r * 0.88f else r * 0.9f
+                val tickLen = if (isMajor) canvasR * 0.1f else canvasR * 0.05f
+                val outerR = if (isMajor) canvasR * 0.88f else canvasR * 0.9f
                 val x1 = cx + outerR * sin(angle)
                 val y1 = cy - outerR * cos(angle)
                 val x2 = cx + (outerR - tickLen) * sin(angle)
@@ -214,65 +238,168 @@ private fun CompassView(
                 )
             }
 
-            val paint = android.graphics.Paint().apply {
-                textSize = 34f
+            val labelR = canvasR * 0.65f
+
+            val northPaint = android.graphics.Paint().apply {
+                textSize = 60f
                 textAlign = android.graphics.Paint.Align.CENTER
                 isAntiAlias = true
                 isFakeBoldText = true
+                color = android.graphics.Color.rgb(255, 80, 80)
+            }
+            val cardinalPaint = android.graphics.Paint().apply {
+                textSize = 50f
+                textAlign = android.graphics.Paint.Align.CENTER
+                isAntiAlias = true
+                isFakeBoldText = true
+                color = android.graphics.Color.WHITE
+            }
+            val intercardinalPaint = android.graphics.Paint().apply {
+                textSize = 40f
+                textAlign = android.graphics.Paint.Align.CENTER
+                isAntiAlias = true
+                color = android.graphics.Color.WHITE
+                alpha = 180
+            }
+            val degreePaint = android.graphics.Paint().apply {
+                textSize = 17f
+                textAlign = android.graphics.Paint.Align.CENTER
+                isAntiAlias = true
+                color = android.graphics.Color.WHITE
+                alpha = 140
             }
 
-            val labelR = r * 0.72f
-            val compassLabels = listOf(
-                "N" to 0f, "NE" to 45f, "E" to 90f, "SE" to 135f,
-                "S" to 180f, "SW" to 225f, "W" to 270f, "NW" to 315f
+            val outerLabelR = minOf(cx, cy) * 0.82f
+            val interLabelR = canvasR * 0.72f
+
+            val cardinalEntries = listOf(
+                0 to ("N" to northPaint),
+                90 to ("E" to cardinalPaint),
+                180 to ("S" to cardinalPaint),
+                270 to ("W" to cardinalPaint)
             )
-            for ((label, angleDeg) in compassLabels) {
-                val a = Math.toRadians(angleDeg.toDouble()).toFloat()
+            for ((deg, lp) in cardinalEntries) {
+                val a = Math.toRadians(deg.toDouble()).toFloat()
                 val lx = cx + labelR * sin(a)
                 val ly = cy - labelR * cos(a)
-                paint.color = if (label == "N") android.graphics.Color.rgb(255, 80, 80)
-                else android.graphics.Color.WHITE
-                canvas.drawText(label, lx, ly + 12f, paint)
+                canvas.save()
+                canvas.translate(lx, ly)
+                canvas.rotate(deg.toFloat())
+                canvas.drawText(lp.first, 0f, 0f, lp.second)
+                canvas.restore()
             }
 
-            val degreeLabels = listOf(30, 60, 120, 150, 210, 240, 300, 330)
-            paint.textSize = 20f
-            paint.alpha = 120
-            val degreeLabelR = r * 0.76f
-            for (deg in degreeLabels) {
+            val degreeEntries = (0 until 360 step 15).map { deg ->
+                deg to ("$deg" to degreePaint)
+            }
+            for ((deg, lp) in degreeEntries) {
                 val a = Math.toRadians(deg.toDouble()).toFloat()
-                val lx = cx + degreeLabelR * sin(a)
-                val ly = cy - degreeLabelR * cos(a)
-                canvas.drawText("$deg", lx, ly + 7f, paint)
+                val lx = cx + outerLabelR * sin(a)
+                val ly = cy - outerLabelR * cos(a)
+                canvas.save()
+                canvas.translate(lx, ly)
+                canvas.rotate(deg.toFloat())
+                canvas.drawText(lp.first, 0f, 0f, lp.second)
+                canvas.restore()
+            }
+
+            val interEntries = listOf(
+                45 to ("NE" to intercardinalPaint),
+                135 to ("SE" to intercardinalPaint),
+                225 to ("SW" to intercardinalPaint),
+                315 to ("NW" to intercardinalPaint)
+            )
+            for ((deg, lp) in interEntries) {
+                val a = Math.toRadians(deg.toDouble()).toFloat()
+                val lx = cx + interLabelR * sin(a)
+                val ly = cy - interLabelR * cos(a)
+                canvas.save()
+                canvas.translate(lx, ly)
+                canvas.rotate(deg.toFloat())
+                canvas.drawText(lp.first, 0f, 0f, lp.second)
+                canvas.restore()
             }
 
             canvas.restore()
 
-            val topIndicator = Path().apply {
-                moveTo(cx, cy - r * 0.9f)
-                lineTo(cx - r * 0.08f, cy - r * 0.78f)
-                lineTo(cx + r * 0.08f, cy - r * 0.78f)
-                close()
-            }
-            drawPath(topIndicator, color = Color(0xFFFF4444))
+            val edgeR = minOf(cx, cy)
+            val indicatorBase = edgeR * 0.92f
+            val indicatorTip = edgeR * 0.99f
+            drawPath(
+                Path().apply {
+                    moveTo(cx, cy - indicatorTip)
+                    lineTo(cx - edgeR * 0.09f, cy - indicatorBase)
+                    lineTo(cx + edgeR * 0.09f, cy - indicatorBase)
+                    close()
+                },
+                color = topIndicatorColor
+            )
 
-            val bottomIndicator = Path().apply {
-                moveTo(cx, cy + r * 0.9f)
-                lineTo(cx - r * 0.06f, cy + r * 0.78f)
-                lineTo(cx + r * 0.06f, cy + r * 0.78f)
-                close()
-            }
-            drawPath(bottomIndicator, color = Color(0xFF444444))
+            drawPath(
+                Path().apply {
+                    moveTo(cx, cy + indicatorTip)
+                    lineTo(cx - edgeR * 0.06f, cy + indicatorBase)
+                    lineTo(cx + edgeR * 0.06f, cy + indicatorBase)
+                    close()
+                },
+                color = Color(0xFF444444)
+            )
 
+            val levelR = 18.dp.toPx()
             drawCircle(
                 color = surface,
-                radius = 6.dp.toPx(),
+                radius = levelR,
                 center = Offset(cx, cy)
             )
             drawCircle(
-                color = primary,
-                radius = 3.dp.toPx(),
-                center = Offset(cx, cy)
+                color = outlineVariant.copy(alpha = 0.25f),
+                radius = levelR,
+                center = Offset(cx, cy),
+                style = Stroke(1.5.dp.toPx())
+            )
+            drawCircle(
+                color = outlineVariant.copy(alpha = 0.1f),
+                radius = levelR * 0.7f,
+                center = Offset(cx, cy),
+                style = Stroke(0.5.dp.toPx())
+            )
+            drawLine(
+                outlineVariant.copy(alpha = 0.15f),
+                Offset(cx - levelR, cy),
+                Offset(cx + levelR, cy),
+                strokeWidth = 0.5.dp.toPx()
+            )
+            drawLine(
+                outlineVariant.copy(alpha = 0.15f),
+                Offset(cx, cy - levelR),
+                Offset(cx, cy + levelR),
+                strokeWidth = 0.5.dp.toPx()
+            )
+
+            val maxTilt = 45f
+            val dx = (animatedRoll.value / maxTilt).coerceIn(-1f, 1f) * levelR * 0.65f
+            val dy = (animatedPitch.value / maxTilt).coerceIn(-1f, 1f) * levelR * 0.65f
+            val tiltMag = sqrt(dx * dx + dy * dy) / (levelR * 0.65f)
+            val dotColor = when {
+                tiltMag < 0.35f -> Color(0xFF4CAF50)
+                tiltMag < 0.7f -> Color(0xFFFFC107)
+                else -> Color(0xFFE53935)
+            }
+            val dotPos = Offset(cx + dx, cy + dy)
+            drawCircle(
+                color = dotColor.copy(alpha = 0.25f),
+                radius = 10.dp.toPx(),
+                center = dotPos
+            )
+            drawCircle(
+                color = Color.White.copy(alpha = 0.6f),
+                radius = 6.dp.toPx(),
+                center = dotPos
+            )
+            drawCircle(
+                color = dotColor,
+                radius = 4.5.dp.toPx(),
+                center = dotPos
             )
         }
 }
@@ -308,6 +435,8 @@ private fun PreviewCompassScreen() {
         ) { padding ->
             CompassScreenContent(
                 heading = 45f,
+                pitch = 5f,
+                roll = -3f,
                 isAvailable = true,
                 modifier = Modifier.padding(padding)
             )
@@ -337,6 +466,8 @@ private fun PreviewCompassScreenUnavailable() {
         ) { padding ->
             CompassScreenContent(
                 heading = 0f,
+                pitch = 0f,
+                roll = 0f,
                 isAvailable = false,
                 modifier = Modifier.padding(padding)
             )
