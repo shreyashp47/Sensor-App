@@ -185,23 +185,25 @@ private fun CompassView(
     val primary = MaterialTheme.colorScheme.primary
     val surface = MaterialTheme.colorScheme.surface
 
+    val topIndicatorColor = Color(0xFFFF4444)
+
     Canvas(modifier = modifier.padding(8.dp)) {
             val cx = size.width / 2f
             val cy = size.height / 2f
-            val r = minOf(cx, cy)
+            val canvasR = minOf(cx, cy) * 0.78f
 
             val canvas = drawContext.canvas.nativeCanvas
             canvas.save()
             canvas.rotate(-animatedHeading.value, cx, cy)
 
-            drawCircle(color = outlineVariant, radius = r, center = Offset(cx, cy), style = Stroke(2.dp.toPx()))
-            drawCircle(color = outlineVariant.copy(alpha = 0.2f), radius = r * 0.96f, center = Offset(cx, cy), style = Stroke(1.dp.toPx()))
+            drawCircle(color = outlineVariant, radius = canvasR, center = Offset(cx, cy), style = Stroke(2.dp.toPx()))
+            drawCircle(color = outlineVariant.copy(alpha = 0.2f), radius = canvasR * 0.96f, center = Offset(cx, cy), style = Stroke(1.dp.toPx()))
 
             for (i in 0 until 72) {
                 val angle = Math.toRadians((i * 5).toDouble()).toFloat()
                 val isMajor = i % 6 == 0
-                val tickLen = if (isMajor) r * 0.1f else r * 0.05f
-                val outerR = if (isMajor) r * 0.88f else r * 0.9f
+                val tickLen = if (isMajor) canvasR * 0.1f else canvasR * 0.05f
+                val outerR = if (isMajor) canvasR * 0.88f else canvasR * 0.9f
                 val x1 = cx + outerR * sin(angle)
                 val y1 = cy - outerR * cos(angle)
                 val x2 = cx + (outerR - tickLen) * sin(angle)
@@ -214,55 +216,112 @@ private fun CompassView(
                 )
             }
 
-            val paint = android.graphics.Paint().apply {
-                textSize = 34f
+            val labelR = canvasR * 0.65f
+
+            val northPaint = android.graphics.Paint().apply {
+                textSize = 60f
                 textAlign = android.graphics.Paint.Align.CENTER
                 isAntiAlias = true
                 isFakeBoldText = true
+                color = android.graphics.Color.rgb(255, 80, 80)
+            }
+            val cardinalPaint = android.graphics.Paint().apply {
+                textSize = 50f
+                textAlign = android.graphics.Paint.Align.CENTER
+                isAntiAlias = true
+                isFakeBoldText = true
+                color = android.graphics.Color.WHITE
+            }
+            val intercardinalPaint = android.graphics.Paint().apply {
+                textSize = 40f
+                textAlign = android.graphics.Paint.Align.CENTER
+                isAntiAlias = true
+                color = android.graphics.Color.WHITE
+                alpha = 180
+            }
+            val degreePaint = android.graphics.Paint().apply {
+                textSize = 17f
+                textAlign = android.graphics.Paint.Align.CENTER
+                isAntiAlias = true
+                color = android.graphics.Color.WHITE
+                alpha = 140
             }
 
-            val labelR = r * 0.72f
-            val compassLabels = listOf(
-                "N" to 0f, "NE" to 45f, "E" to 90f, "SE" to 135f,
-                "S" to 180f, "SW" to 225f, "W" to 270f, "NW" to 315f
+            val outerLabelR = minOf(cx, cy) * 0.82f
+            val interLabelR = canvasR * 0.72f
+
+            val cardinalEntries = listOf(
+                0 to ("N" to northPaint),
+                90 to ("E" to cardinalPaint),
+                180 to ("S" to cardinalPaint),
+                270 to ("W" to cardinalPaint)
             )
-            for ((label, angleDeg) in compassLabels) {
-                val a = Math.toRadians(angleDeg.toDouble()).toFloat()
+            for ((deg, lp) in cardinalEntries) {
+                val a = Math.toRadians(deg.toDouble()).toFloat()
                 val lx = cx + labelR * sin(a)
                 val ly = cy - labelR * cos(a)
-                paint.color = if (label == "N") android.graphics.Color.rgb(255, 80, 80)
-                else android.graphics.Color.WHITE
-                canvas.drawText(label, lx, ly + 12f, paint)
+                canvas.save()
+                canvas.translate(lx, ly)
+                canvas.rotate(deg.toFloat())
+                canvas.drawText(lp.first, 0f, 0f, lp.second)
+                canvas.restore()
             }
 
-            val degreeLabels = listOf(30, 60, 120, 150, 210, 240, 300, 330)
-            paint.textSize = 20f
-            paint.alpha = 120
-            val degreeLabelR = r * 0.76f
-            for (deg in degreeLabels) {
+            val degreeEntries = (0 until 360 step 15).map { deg ->
+                deg to ("$deg" to degreePaint)
+            }
+            for ((deg, lp) in degreeEntries) {
                 val a = Math.toRadians(deg.toDouble()).toFloat()
-                val lx = cx + degreeLabelR * sin(a)
-                val ly = cy - degreeLabelR * cos(a)
-                canvas.drawText("$deg", lx, ly + 7f, paint)
+                val lx = cx + outerLabelR * sin(a)
+                val ly = cy - outerLabelR * cos(a)
+                canvas.save()
+                canvas.translate(lx, ly)
+                canvas.rotate(deg.toFloat())
+                canvas.drawText(lp.first, 0f, 0f, lp.second)
+                canvas.restore()
+            }
+
+            val interEntries = listOf(
+                45 to ("NE" to intercardinalPaint),
+                135 to ("SE" to intercardinalPaint),
+                225 to ("SW" to intercardinalPaint),
+                315 to ("NW" to intercardinalPaint)
+            )
+            for ((deg, lp) in interEntries) {
+                val a = Math.toRadians(deg.toDouble()).toFloat()
+                val lx = cx + interLabelR * sin(a)
+                val ly = cy - interLabelR * cos(a)
+                canvas.save()
+                canvas.translate(lx, ly)
+                canvas.rotate(deg.toFloat())
+                canvas.drawText(lp.first, 0f, 0f, lp.second)
+                canvas.restore()
             }
 
             canvas.restore()
 
-            val topIndicator = Path().apply {
-                moveTo(cx, cy - r * 0.9f)
-                lineTo(cx - r * 0.08f, cy - r * 0.78f)
-                lineTo(cx + r * 0.08f, cy - r * 0.78f)
-                close()
-            }
-            drawPath(topIndicator, color = Color(0xFFFF4444))
+            val edgeR = minOf(cx, cy)
+            val indicatorBase = edgeR * 0.92f
+            val indicatorTip = edgeR * 0.99f
+            drawPath(
+                Path().apply {
+                    moveTo(cx, cy - indicatorTip)
+                    lineTo(cx - edgeR * 0.09f, cy - indicatorBase)
+                    lineTo(cx + edgeR * 0.09f, cy - indicatorBase)
+                    close()
+                },
+                color = topIndicatorColor
+            )
 
-            val bottomIndicator = Path().apply {
-                moveTo(cx, cy + r * 0.9f)
-                lineTo(cx - r * 0.06f, cy + r * 0.78f)
-                lineTo(cx + r * 0.06f, cy + r * 0.78f)
-                close()
-            }
-            drawPath(bottomIndicator, color = Color(0xFF444444))
+            drawPath(
+                Path().apply {
+                    moveTo(cx, cy + indicatorTip)
+                    lineTo(cx - edgeR * 0.06f, cy + indicatorBase)
+                    lineTo(cx + edgeR * 0.06f, cy + indicatorBase)
+                    close()
+                },
+                color = Color(0xFF444444)
+            )
 
             drawCircle(
                 color = surface,
