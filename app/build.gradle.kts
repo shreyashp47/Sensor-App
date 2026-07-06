@@ -22,8 +22,8 @@ android {
         applicationId = "com.shreyash.sensorapp"
         minSdk = 24
         targetSdk = 36
-        versionCode = 13
-        versionName = "1.13"
+        versionCode = 14
+        versionName = "1.14"
     }
 
     signingConfigs {
