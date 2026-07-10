@@ -1,11 +1,9 @@
 package com.shreyash.sensorapp.presentation.detail
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -18,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.shreyash.sensorapp.domain.model.SensorReading
 import kotlin.math.cos
@@ -38,16 +35,17 @@ fun GyroscopeCube(
     val rotationZ = remember { Animatable(0f) }
 
     LaunchedEffect(gx, gy, gz) {
-        rotationX.animateTo(rotationX.value + gx * 0.05f, tween(100))
-        rotationY.animateTo(rotationY.value + gy * 0.05f, tween(100))
-        rotationZ.animateTo(rotationZ.value + gz * 0.05f, tween(100))
+        rotationX.snapTo(rotationX.value + gx * 0.08f)
+        rotationY.snapTo(rotationY.value + gy * 0.08f)
+        rotationZ.snapTo(rotationZ.value + gz * 0.08f)
     }
 
     val primary = MaterialTheme.colorScheme.primary
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
 
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
         ),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -58,14 +56,14 @@ fun GyroscopeCube(
             Text(
                 text = "3D Visualization",
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp)
             )
 
-            Canvas(modifier = Modifier.fillMaxSize().padding(bottom = 8.dp)) {
+            Canvas(modifier = Modifier.fillMaxSize().padding(16.dp)) {
                 val cx = size.width / 2f
                 val cy = size.height / 2f
-                val s = minOf(cx, cy) * 0.6f
+                val s = minOf(cx, cy) * 0.55f
 
                 val rx = rotationX.value
                 val ry = rotationY.value
@@ -78,7 +76,7 @@ fun GyroscopeCube(
                     floatArrayOf(1f, 1f, 1f), floatArrayOf(-1f, 1f, 1f)
                 )
 
-                val projected = vertices.map { v ->
+                val rotated = vertices.map { v ->
                     var x = v[0]; var y = v[1]; var z = v[2]
 
                     val rxRad = Math.toRadians(rx.toDouble()).toFloat()
@@ -101,6 +99,10 @@ fun GyroscopeCube(
                     val yRot = x * sinZ + y * cosZ
                     x = xRot; y = yRot
 
+                    Triple(x, y, z)
+                }
+
+                val projected = rotated.map { (x, y, _) ->
                     Offset(cx + x * s, cy + y * s)
                 }
 
@@ -111,18 +113,18 @@ fun GyroscopeCube(
                 )
 
                 for ((i, j) in edges) {
-                    val zAvg = (listOf(vertices[i][2], vertices[j][2]).average()).toFloat()
-                    val alpha = ((zAvg + 1f) / 2f).coerceIn(0.3f, 1f)
+                    val zAvg = (rotated[i].third + rotated[j].third) / 2f
+                    val alpha = ((zAvg + 1.5f) / 3f).coerceIn(0.25f, 1f)
                     drawLine(
                         color = primary.copy(alpha = alpha),
                         start = projected[i],
                         end = projected[j],
-                        strokeWidth = 2.dp.toPx()
+                        strokeWidth = 2.5.dp.toPx()
                     )
                 }
 
                 for (v in projected) {
-                    drawCircle(color = primary, radius = 3.dp.toPx(), center = v)
+                    drawCircle(color = primary, radius = 3.5.dp.toPx(), center = v)
                 }
             }
         }
