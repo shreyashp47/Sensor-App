@@ -1,10 +1,18 @@
 package com.shreyash.sensorapp.presentation.detail
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -193,6 +201,210 @@ fun LiveLineChart(
                     x = x,
                     y = y
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun MultiAxisLineChart(
+    readings: List<SensorReading>,
+    modifier: Modifier = Modifier
+) {
+    if (readings.isEmpty()) {
+        Box(modifier = modifier, contentAlignment = Alignment.Center) {
+            Text(
+                text = "No data yet",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        return
+    }
+
+    val axisColors = listOf(
+        Color(0xFFE24B4A),
+        Color(0xFF639922),
+        Color(0xFF378ADD)
+    )
+    val axisLabels = listOf("X", "Y", "Z")
+
+    val axisValues = (0..2).map { axis ->
+        readings.map { it.values.getOrElse(axis) { 0f } }
+    }
+
+    val allValues = axisValues.flatten()
+    val minVal = allValues.min()
+    val maxVal = allValues.max()
+    val range = if (maxVal - minVal == 0f) 1f else maxVal - minVal
+    val paddingV = 0.1f
+    val adjustedMin = minVal - range * paddingV
+    val adjustedMax = maxVal + range * paddingV
+    val adjustedRange = adjustedMax - adjustedMin
+
+    val gridColor = MaterialTheme.colorScheme.outlineVariant
+
+    var touchIndex by remember { mutableStateOf(-1) }
+
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 8.dp, top = 24.dp, end = 8.dp, bottom = 24.dp)
+                .pointerInput(axisValues) {
+                    detectTapGestures { offset ->
+                        if (axisValues[0].size < 2) return@detectTapGestures
+                        val stepX = size.width.toFloat() / (axisValues[0].size - 1)
+                        val index = ((offset.x / stepX) + 0.5f).toInt()
+                            .coerceIn(0, axisValues[0].size - 1)
+                        touchIndex = if (touchIndex == index) -1 else index
+                    }
+                }
+        ) {
+            if (axisValues[0].size < 2) return@Canvas
+
+            val stepX = size.width / (axisValues[0].size - 1).coerceAtLeast(1)
+
+            fun yForValue(value: Float): Float {
+                val normY = ((value - adjustedMin) / adjustedRange).coerceIn(0f, 1f)
+                return size.height - normY * size.height
+            }
+
+            for (i in 0 until axisValues[0].size) {
+                val x = i * stepX
+                drawLine(
+                    color = gridColor,
+                    start = Offset(x, 0f),
+                    end = Offset(x, size.height),
+                    strokeWidth = 0.5f
+                )
+            }
+
+            axisValues.forEachIndexed { axisIdx, values ->
+                val linePath = Path()
+                values.forEachIndexed { index, value ->
+                    val x = index * stepX
+                    val y = yForValue(value)
+                    if (index == 0) {
+                        linePath.moveTo(x, y)
+                    } else {
+                        linePath.lineTo(x, y)
+                    }
+                }
+                drawPath(
+                    path = linePath,
+                    color = axisColors[axisIdx],
+                    style = Stroke(
+                        width = 2.dp.toPx(),
+                        cap = StrokeCap.Round,
+                        join = StrokeJoin.Round
+                    )
+                )
+            }
+
+            val labelPaint = android.graphics.Paint().apply {
+                color = android.graphics.Color.GRAY
+                textSize = 22f
+                textAlign = android.graphics.Paint.Align.RIGHT
+                isAntiAlias = true
+            }
+
+            drawContext.canvas.nativeCanvas.drawText(
+                formatLargeValue(adjustedMax),
+                -4.dp.toPx(),
+                0f,
+                labelPaint
+            )
+
+            drawContext.canvas.nativeCanvas.drawText(
+                formatLargeValue(adjustedMin),
+                -4.dp.toPx(),
+                size.height,
+                labelPaint
+            )
+
+            if (touchIndex in axisValues[0].indices && axisValues[0].size >= 2) {
+                val x = touchIndex * stepX
+                drawLine(
+                    color = Color.White.copy(alpha = 0.5f),
+                    start = Offset(x, 0f),
+                    end = Offset(x, size.height),
+                    strokeWidth = 1f
+                )
+
+                val tooltipPaint = android.graphics.Paint().apply {
+                    color = android.graphics.Color.WHITE
+                    textSize = 24f
+                    textAlign = android.graphics.Paint.Align.CENTER
+                    isAntiAlias = true
+                    isFakeBoldText = true
+                }
+
+                val lines = axisValues.mapIndexed { i, values ->
+                    "${axisLabels[i]}: ${formatLargeValue(values[touchIndex])}"
+                }
+                val tooltipText = lines.joinToString("  ")
+                val textWidth = tooltipPaint.measureText(tooltipText)
+                val padding = 12f
+                val tooltipHeight = tooltipPaint.textSize + padding * 2
+                val rectWidth = textWidth + padding * 2
+                val rectLeft = (x - rectWidth / 2).coerceIn(0f, size.width - rectWidth)
+                val rectTop = 4.dp.toPx()
+
+                drawRoundRect(
+                    color = Color(40, 40, 45, 230),
+                    topLeft = Offset(rectLeft, rectTop),
+                    size = Size(rectWidth, tooltipHeight),
+                    cornerRadius = CornerRadius(8f, 8f)
+                )
+
+                drawContext.canvas.nativeCanvas.drawText(
+                    tooltipText,
+                    x,
+                    rectTop + padding + tooltipPaint.textSize / 2 + 2f,
+                    tooltipPaint
+                )
+
+                axisValues.forEachIndexed { axisIdx, values ->
+                    val value = values[touchIndex]
+                    val y = yForValue(value)
+                    drawCircle(
+                        color = axisColors[axisIdx],
+                        radius = 4.dp.toPx(),
+                        center = Offset(x, y)
+                    )
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 14.dp, end = 14.dp, bottom = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            axisColors.forEachIndexed { i, color ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(color)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = axisLabels[i],
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }

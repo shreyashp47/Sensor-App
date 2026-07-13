@@ -14,9 +14,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.shreyash.sensorapp.domain.model.SensorReading
 import com.shreyash.sensorapp.domain.model.SensorType
+import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
 
 @Composable
 fun LinearAccelerationScreen(
@@ -73,5 +75,21 @@ private fun LinearAccelerationContent(
         SensorUsageHint(sensorType = SensorType.LINEAR_ACCELERATION)
 
         Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewLinearAccelerationScreen() {
+    SensorAppTheme {
+        LinearAccelerationContent(
+            currentReading = SensorReading(
+                sensorType = SensorType.LINEAR_ACCELERATION,
+                values = listOf(0.05f, -0.03f, 0.12f),
+                accuracy = 3,
+                timestampMs = System.currentTimeMillis()
+            ),
+            chartReadings = emptyList()
+        )
     }
 }

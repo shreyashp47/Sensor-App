@@ -14,9 +14,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.shreyash.sensorapp.domain.model.SensorReading
 import com.shreyash.sensorapp.domain.model.SensorType
+import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
 
 @Composable
 fun GravityScreen(
@@ -73,5 +75,21 @@ private fun GravityContent(
         SensorUsageHint(sensorType = SensorType.GRAVITY)
 
         Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewGravityScreen() {
+    SensorAppTheme {
+        GravityContent(
+            currentReading = SensorReading(
+                sensorType = SensorType.GRAVITY,
+                values = listOf(0.2f, -0.1f, 9.81f),
+                accuracy = 3,
+                timestampMs = System.currentTimeMillis()
+            ),
+            chartReadings = emptyList()
+        )
     }
 }
