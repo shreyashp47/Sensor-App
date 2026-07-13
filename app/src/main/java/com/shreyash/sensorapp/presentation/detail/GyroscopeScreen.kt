@@ -42,6 +42,7 @@ import com.shreyash.sensorapp.domain.model.SensorReading
 import com.shreyash.sensorapp.domain.model.SensorType
 import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
 import com.shreyash.sensorapp.presentation.theme.SensorGreen
+import com.shreyash.sensorapp.presentation.detail.sensorUnitText
 import kotlin.math.sqrt
 
 @Composable
@@ -252,19 +253,19 @@ private fun AxisValuesCard(reading: SensorReading) {
                 AxisValueCard(
                     label = "X",
                     value = reading.values.getOrNull(0) ?: 0f,
-                    unit = SensorType.GYROSCOPE.unitX,
+                    unit = sensorUnitText(SensorType.GYROSCOPE.unitX),
                     color = Color(0xFF42A5F5)
                 )
                 AxisValueCard(
                     label = "Y",
                     value = reading.values.getOrNull(1) ?: 0f,
-                    unit = SensorType.GYROSCOPE.unitY,
+                    unit = sensorUnitText(SensorType.GYROSCOPE.unitY),
                     color = SensorGreen
                 )
                 AxisValueCard(
                     label = "Z",
                     value = reading.values.getOrNull(2) ?: 0f,
-                    unit = SensorType.GYROSCOPE.unitZ,
+                    unit = sensorUnitText(SensorType.GYROSCOPE.unitZ),
                     color = Color(0xFFFF7043)
                 )
             }

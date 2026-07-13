@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.shreyash.sensorapp.domain.model.SensorReading
 import com.shreyash.sensorapp.domain.model.SensorType
 import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
+import com.shreyash.sensorapp.R
 
 private val AxisRed = Color(0xFFE24B4A)
 private val AxisGreen = Color(0xFF639922)
@@ -56,13 +57,13 @@ private fun AccelerometerContent(
             .padding(16.dp)
     ) {
         Text(
-            text = SensorType.ACCELEROMETER.category.displayName,
+            text = sensorCategoryName(SensorType.ACCELEROMETER.category),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
         Text(
-            text = SensorType.ACCELEROMETER.displayName,
+            text = sensorDisplayName(SensorType.ACCELEROMETER),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -76,21 +77,21 @@ private fun AccelerometerContent(
             AxisValueCard(
                 label = "X",
                 value = currentReading?.values?.getOrNull(0),
-                unit = SensorType.ACCELEROMETER.unitX,
+                unit = if (SensorType.ACCELEROMETER.unitX.isNotEmpty()) sensorUnitText(SensorType.ACCELEROMETER.unitX) else "",
                 labelColor = AxisRed,
                 modifier = Modifier.weight(1f)
             )
             AxisValueCard(
                 label = "Y",
                 value = currentReading?.values?.getOrNull(1),
-                unit = SensorType.ACCELEROMETER.unitY,
+                unit = if (SensorType.ACCELEROMETER.unitY.isNotEmpty()) sensorUnitText(SensorType.ACCELEROMETER.unitY) else "",
                 labelColor = AxisGreen,
                 modifier = Modifier.weight(1f)
             )
             AxisValueCard(
                 label = "Z",
                 value = currentReading?.values?.getOrNull(2),
-                unit = SensorType.ACCELEROMETER.unitZ,
+                unit = if (SensorType.ACCELEROMETER.unitZ.isNotEmpty()) sensorUnitText(SensorType.ACCELEROMETER.unitZ) else "",
                 labelColor = AxisBlue,
                 modifier = Modifier.weight(1f)
             )

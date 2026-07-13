@@ -51,15 +51,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.shreyash.sensorapp.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shreyash.sensorapp.domain.model.SensorAvailability
 import com.shreyash.sensorapp.domain.model.SensorCategory
 import com.shreyash.sensorapp.domain.model.SensorState
 import com.shreyash.sensorapp.domain.model.SensorType
+import com.shreyash.sensorapp.presentation.detail.sensorCategoryName
+import com.shreyash.sensorapp.presentation.detail.sensorDescription
+import com.shreyash.sensorapp.presentation.detail.sensorDisplayName
 import com.shreyash.sensorapp.presentation.permission.PermissionDialog
 import com.shreyash.sensorapp.presentation.permission.rememberPermissionHandler
 import com.shreyash.sensorapp.presentation.sensorIcon
@@ -191,7 +196,7 @@ private fun CategoryHeader(category: SensorCategory) {
         )
         Spacer(Modifier.height(12.dp))
         Text(
-            text = category.displayName.uppercase(),
+            text = sensorCategoryName(category).uppercase(),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
@@ -248,9 +253,9 @@ fun SensorRowItem(
                 )
             }
             Spacer(Modifier.width(14.dp))
-            Column(Modifier.weight(1f)) {
+                Column(Modifier.weight(1f)) {
                 Text(
-                    text = state.type.displayName,
+                    text = sensorDisplayName(state.type),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = if (isAvailable) MaterialTheme.colorScheme.onSurface
@@ -259,7 +264,7 @@ fun SensorRowItem(
                 if (!isAvailable) {
                     Spacer(Modifier.height(2.dp))
                     Text(
-                        text = "Unavailable",
+                        text = stringResource(R.string.unavailable),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                     )
@@ -351,7 +356,7 @@ fun SensorGridItem(
             }
             Spacer(Modifier.height(10.dp))
             Text(
-                text = state.type.displayName,
+                text = sensorDisplayName(state.type),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
@@ -368,7 +373,7 @@ fun SensorGridItem(
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = "Unavailable",
+                        text = stringResource(R.string.unavailable),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                     )
@@ -394,14 +399,13 @@ fun SensorGridItem(
                 )
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    text = state.type.displayName,
+                    text = sensorDisplayName(state.type),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    text = "Your device does not have a ${state.type.displayName}." +
-                            "\n\n${state.type.description}",
+                    text = stringResource(R.string.sensor_missing, sensorDisplayName(state.type), sensorDescription(state.type)),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

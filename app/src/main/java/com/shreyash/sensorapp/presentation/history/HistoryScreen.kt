@@ -53,6 +53,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shreyash.sensorapp.domain.model.LogSession
 import com.shreyash.sensorapp.domain.model.SensorType
+import com.shreyash.sensorapp.presentation.detail.sensorDisplayName
 import com.shreyash.sensorapp.presentation.sensorIcon
 import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
 
@@ -253,7 +254,7 @@ private fun SessionItem(session: LogSession) {
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = session.sensorType.displayName,
+                    text = sensorDisplayName(session.sensorType),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold
                 )

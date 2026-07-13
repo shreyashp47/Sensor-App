@@ -25,6 +25,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.shreyash.sensorapp.R
 import com.shreyash.sensorapp.domain.model.SensorReading
 import com.shreyash.sensorapp.domain.model.SensorType
 import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
@@ -55,13 +57,13 @@ private fun LinearAccelerationContent(
             .padding(16.dp)
     ) {
         Text(
-            text = SensorType.LINEAR_ACCELERATION.category.displayName,
+            text = sensorCategoryName(SensorType.LINEAR_ACCELERATION.category),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
         Text(
-            text = SensorType.LINEAR_ACCELERATION.displayName,
+            text = sensorDisplayName(SensorType.LINEAR_ACCELERATION),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -75,21 +77,21 @@ private fun LinearAccelerationContent(
             AxisValueCard(
                 label = "X",
                 value = currentReading?.values?.getOrNull(0),
-                unit = SensorType.LINEAR_ACCELERATION.unitX,
+                unit = if (SensorType.LINEAR_ACCELERATION.unitX.isNotEmpty()) sensorUnitText(SensorType.LINEAR_ACCELERATION.unitX) else "",
                 labelColor = AxisRed,
                 modifier = Modifier.weight(1f)
             )
             AxisValueCard(
                 label = "Y",
                 value = currentReading?.values?.getOrNull(1),
-                unit = SensorType.LINEAR_ACCELERATION.unitY,
+                unit = if (SensorType.LINEAR_ACCELERATION.unitY.isNotEmpty()) sensorUnitText(SensorType.LINEAR_ACCELERATION.unitY) else "",
                 labelColor = AxisGreen,
                 modifier = Modifier.weight(1f)
             )
             AxisValueCard(
                 label = "Z",
                 value = currentReading?.values?.getOrNull(2),
-                unit = SensorType.LINEAR_ACCELERATION.unitZ,
+                unit = if (SensorType.LINEAR_ACCELERATION.unitZ.isNotEmpty()) sensorUnitText(SensorType.LINEAR_ACCELERATION.unitZ) else "",
                 labelColor = AxisBlue,
                 modifier = Modifier.weight(1f)
             )

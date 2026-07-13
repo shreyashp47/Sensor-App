@@ -24,4 +24,60 @@
     <string name="database_stats">Database stats</string>
     <string name="total_rows">Total rows</string>
     <string name="no_readings">No readings yet</string>
+
+    <!-- Sensors -->
+    <string name="sensor_accelerometer">Accelerometer</string>
+    <string name="sensor_accelerometer_desc">Measures acceleration forces applied to the device, including gravity.</string>
+    <string name="sensor_gyroscope">Gyroscope</string>
+    <string name="sensor_gyroscope_desc">Measures the device\'s rate of rotation around each axis.</string>
+    <string name="sensor_linear_acceleration">Linear Acceleration</string>
+    <string name="sensor_linear_acceleration_desc">Measures the acceleration forces excluding gravity.</string>
+    <string name="sensor_magnetometer">Magnetometer</string>
+    <string name="sensor_magnetometer_desc">Measures the ambient magnetic field in the environment.</string>
+    <string name="sensor_gravity">Gravity</string>
+    <string name="sensor_gravity_desc">Measures the direction and magnitude of gravity.</string>
+    <string name="sensor_rotation_vector">Rotation Vector</string>
+    <string name="sensor_rotation_vector_desc">Measures the orientation of the device relative to the world coordinate system.</string>
+    <string name="sensor_light">Light</string>
+    <string name="sensor_light_desc">Measures the ambient light level (illuminance).</string>
+    <string name="sensor_proximity">Proximity</string>
+    <string name="sensor_proximity_desc">Measures the distance of an object relative to the device screen.</string>
+    <string name="sensor_barometer">Barometer</string>
+    <string name="sensor_barometer_desc">Measures the ambient air pressure.</string>
+    <string name="sensor_step_counter">Step Counter</string>
+    <string name="sensor_step_counter_desc">Counts the number of steps taken since the last device reboot.</string>
+
+    <!-- Categories -->
+    <string name="category_motion">Motion</string>
+    <string name="category_environmental">Environmental</string>
+    <string name="category_position">Position</string>
+    <string name="category_activity">Activity</string>
+
+    <!-- Units -->
+    <string name="unit_mps2">m/s²</string>
+    <string name="unit_dps">°/s</string>
+    <string name="unit_microtesla">µT</string>
+    <string name="unit_lux">lx</string>
+    <string name="unit_cm">cm</string>
+    <string name="unit_hpa">hPa</string>
+    <string name="unit_steps">steps</string>
+
+    <!-- Usage hints -->
+    <string name="hint_accelerometer">Tilt or shake the device to see acceleration forces change across X, Y, and Z axes.</string>
+    <string name="hint_gyroscope">Rotate the device to measure the rate of rotation around each axis.</string>
+    <string name="hint_linear_acceleration">Move the device quickly to measure acceleration excluding gravity.</string>
+    <string name="hint_magnetometer">Move the device near a metal object or wave it in a figure-8 pattern to test.</string>
+    <string name="hint_gravity">Tilt the device to see how gravity distributes across each axis.</string>
+    <string name="hint_rotation_vector">Rotate the device to observe orientation changes relative to the world.</string>
+    <string name="hint_light">Cover and uncover the light sensor (usually near the front camera) to see lux level changes.</string>
+    <string name="hint_proximity">Cover the top of the device to trigger the sensor. Used to detect when the phone is held to the ear.</string>
+    <string name="hint_pressure">Ambient air pressure changes with altitude. Try moving to a different floor or elevation.</string>
+    <string name="hint_step_counter">Walk or simulate steps to see the step count increment in real time.</string>
+
+    <!-- Permission -->
+    <string name="permission_body_activity">To use the %1$s, SensorApp needs access to your physical activity. This data stays on your device and is never uploaded.</string>
+
+    <!-- Dashboard -->
+    <string name="unavailable">Unavailable</string>
+    <string name="sensor_missing">Your device does not have a %1$s.\n\n%2$s</string>
 </resources>

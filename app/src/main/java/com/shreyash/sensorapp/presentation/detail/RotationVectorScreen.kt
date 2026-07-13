@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.shreyash.sensorapp.domain.model.SensorReading
 import com.shreyash.sensorapp.domain.model.SensorType
 import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
+import com.shreyash.sensorapp.presentation.detail.sensorUnitText
 
 @Composable
 fun RotationVectorScreen(
@@ -62,9 +63,9 @@ private fun RotationVectorContent(
         Spacer(Modifier.height(12.dp))
 
         Text(
-            text = "X: ${formatDetailValue(currentReading?.values?.getOrNull(0))} ${SensorType.ROTATION_VECTOR.unitX}" +
-                    "  Y: ${formatDetailValue(currentReading?.values?.getOrNull(1))} ${SensorType.ROTATION_VECTOR.unitY}" +
-                    "  Z: ${formatDetailValue(currentReading?.values?.getOrNull(2))} ${SensorType.ROTATION_VECTOR.unitZ}",
+            text = "X: ${formatDetailValue(currentReading?.values?.getOrNull(0))} ${sensorUnitText(SensorType.ROTATION_VECTOR.unitX)}" +
+                    "  Y: ${formatDetailValue(currentReading?.values?.getOrNull(1))} ${sensorUnitText(SensorType.ROTATION_VECTOR.unitY)}" +
+                    "  Z: ${formatDetailValue(currentReading?.values?.getOrNull(2))} ${sensorUnitText(SensorType.ROTATION_VECTOR.unitZ)}",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

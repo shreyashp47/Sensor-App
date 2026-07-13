@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.shreyash.sensorapp.domain.model.SensorReading
 import com.shreyash.sensorapp.domain.model.SensorType
 import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
+import com.shreyash.sensorapp.presentation.detail.sensorUnitText
 
 @Composable
 fun MagnetometerScreen(
@@ -62,9 +63,9 @@ private fun MagnetometerContent(
         Spacer(Modifier.height(12.dp))
 
         Text(
-            text = "X: ${formatDetailValue(currentReading?.values?.getOrNull(0))} ${SensorType.MAGNETOMETER.unitX}" +
-                    "  Y: ${formatDetailValue(currentReading?.values?.getOrNull(1))} ${SensorType.MAGNETOMETER.unitY}" +
-                    "  Z: ${formatDetailValue(currentReading?.values?.getOrNull(2))} ${SensorType.MAGNETOMETER.unitZ}",
+            text = "X: ${formatDetailValue(currentReading?.values?.getOrNull(0))} ${sensorUnitText(SensorType.MAGNETOMETER.unitX)}" +
+                    "  Y: ${formatDetailValue(currentReading?.values?.getOrNull(1))} ${sensorUnitText(SensorType.MAGNETOMETER.unitY)}" +
+                    "  Z: ${formatDetailValue(currentReading?.values?.getOrNull(2))} ${sensorUnitText(SensorType.MAGNETOMETER.unitZ)}",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
