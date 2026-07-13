@@ -62,10 +62,13 @@ private fun RotationVectorContent(
 
         Spacer(Modifier.height(12.dp))
 
+        val unitX = if (SensorType.ROTATION_VECTOR.unitX.isNotEmpty()) sensorUnitText(SensorType.ROTATION_VECTOR.unitX) else ""
+        val unitY = if (SensorType.ROTATION_VECTOR.unitY.isNotEmpty()) sensorUnitText(SensorType.ROTATION_VECTOR.unitY) else ""
+        val unitZ = if (SensorType.ROTATION_VECTOR.unitZ.isNotEmpty()) sensorUnitText(SensorType.ROTATION_VECTOR.unitZ) else ""
         Text(
-            text = "X: ${formatDetailValue(currentReading?.values?.getOrNull(0))} ${sensorUnitText(SensorType.ROTATION_VECTOR.unitX)}" +
-                    "  Y: ${formatDetailValue(currentReading?.values?.getOrNull(1))} ${sensorUnitText(SensorType.ROTATION_VECTOR.unitY)}" +
-                    "  Z: ${formatDetailValue(currentReading?.values?.getOrNull(2))} ${sensorUnitText(SensorType.ROTATION_VECTOR.unitZ)}",
+            text = "X: ${formatDetailValue(currentReading?.values?.getOrNull(0))} $unitX" +
+                    "  Y: ${formatDetailValue(currentReading?.values?.getOrNull(1))} $unitY" +
+                    "  Z: ${formatDetailValue(currentReading?.values?.getOrNull(2))} $unitZ",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

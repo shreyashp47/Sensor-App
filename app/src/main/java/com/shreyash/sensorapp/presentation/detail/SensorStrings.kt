@@ -70,7 +70,7 @@ fun sensorUsageHintRes(type: SensorType): Int = when (type) {
 }
 
 @Composable
-fun sensorUnitText(unit: String): String = stringResource(sensorUnitRes(unit))
+fun sensorUnitText(unit: String): String = if (unit.isEmpty()) "" else stringResource(sensorUnitRes(unit))
 
 @StringRes
 fun sensorUnitRes(unit: String): Int = when (unit) {
