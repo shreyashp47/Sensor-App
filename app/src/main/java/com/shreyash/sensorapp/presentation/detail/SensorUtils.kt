@@ -23,9 +23,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.shreyash.sensorapp.R
 import com.shreyash.sensorapp.domain.model.SensorType
 import com.shreyash.sensorapp.presentation.theme.SensorGreen
 
@@ -58,7 +60,7 @@ fun LiveIndicator() {
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                text = "LIVE",
+                text = stringResource(R.string.live_label),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = SensorGreen
@@ -69,21 +71,8 @@ fun LiveIndicator() {
 
 @Composable
 fun SensorUsageHint(sensorType: SensorType) {
-    val hint = when (sensorType) {
-        SensorType.ACCELEROMETER -> "Tilt or shake the device to see acceleration forces change across X, Y, and Z axes."
-        SensorType.GYROSCOPE -> "Rotate the device to measure the rate of rotation around each axis."
-        SensorType.LINEAR_ACCELERATION -> "Move the device quickly to measure acceleration excluding gravity."
-        SensorType.MAGNETOMETER -> "Move the device near a metal object or wave it in a figure-8 pattern to test."
-        SensorType.GRAVITY -> "Tilt the device to see how gravity distributes across each axis."
-        SensorType.ROTATION_VECTOR -> "Rotate the device to observe orientation changes relative to the world."
-        SensorType.LIGHT -> "Cover and uncover the light sensor (usually near the front camera) to see lux level changes."
-        SensorType.PROXIMITY -> "Cover the top of the device to trigger the sensor. Used to detect when the phone is held to the ear."
-        SensorType.PRESSURE -> "Ambient air pressure changes with altitude. Try moving to a different floor or elevation."
-        SensorType.STEP_COUNTER -> "Walk or simulate steps to see the step count increment in real time."
-    }
-
     Text(
-        text = hint,
+        text = sensorUsageHint(sensorType),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
         textAlign = TextAlign.Center

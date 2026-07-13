@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.shreyash.sensorapp.domain.model.SensorReading
 import com.shreyash.sensorapp.domain.model.SensorType
 import com.shreyash.sensorapp.presentation.theme.SensorGreen
+import com.shreyash.sensorapp.presentation.detail.sensorUnitText
 
 @Composable
 fun LiveValueDisplay(
@@ -227,7 +228,7 @@ private fun SingleAxisDisplay(reading: SensorReading, sensorType: SensorType) {
     )
     if (sensorType.unitSingle != null && sensorType.unitSingle.isNotEmpty()) {
         Text(
-            text = sensorType.unitSingle,
+            text = sensorUnitText(sensorType.unitSingle),
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.primary
         )
@@ -243,20 +244,20 @@ private fun MultiAxisDisplay(reading: SensorReading, sensorType: SensorType) {
         AxisValue(
             label = "X",
             value = reading.values.getOrNull(0) ?: 0f,
-            unit = sensorType.unitX
+            unit = if (sensorType.unitX.isNotEmpty()) sensorUnitText(sensorType.unitX) else ""
         )
         if (sensorType.axisCount >= 2) {
             AxisValue(
                 label = "Y",
                 value = reading.values.getOrNull(1) ?: 0f,
-                unit = sensorType.unitY
+                unit = if (sensorType.unitY.isNotEmpty()) sensorUnitText(sensorType.unitY) else ""
             )
         }
         if (sensorType.axisCount >= 3) {
             AxisValue(
                 label = "Z",
                 value = reading.values.getOrNull(2) ?: 0f,
-                unit = sensorType.unitZ
+                unit = if (sensorType.unitZ.isNotEmpty()) sensorUnitText(sensorType.unitZ) else ""
             )
         }
     }

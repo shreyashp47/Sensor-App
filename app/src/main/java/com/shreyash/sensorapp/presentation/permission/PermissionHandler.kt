@@ -18,9 +18,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.core.app.ActivityCompat
+import com.shreyash.sensorapp.R
 import com.shreyash.sensorapp.domain.model.SensorType
+import com.shreyash.sensorapp.presentation.detail.sensorDisplayName
 import kotlinx.coroutines.launch
 
 @Composable
@@ -122,22 +125,21 @@ fun PermissionDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(text = "Permission needed", fontWeight = FontWeight.Bold)
+            Text(text = stringResource(R.string.permission_dialog_title), fontWeight = FontWeight.Bold)
         },
         text = {
             Text(
-                "To use the ${sensorType.displayName}, SensorApp needs access to your " +
-                        "physical activity. This data stays on your device and is never uploaded."
+                stringResource(R.string.permission_body_activity, sensorDisplayName(sensorType))
             )
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Allow")
+                Text(stringResource(R.string.allow))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Not now")
+                Text(stringResource(R.string.not_now))
             }
         }
     )

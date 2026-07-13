@@ -11,9 +11,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.shreyash.sensorapp.domain.model.SensorReading
 import com.shreyash.sensorapp.domain.model.SensorType
+import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
 
 @Composable
 fun PressureScreen(
@@ -59,5 +61,21 @@ private fun PressureContent(
         SensorUsageHint(sensorType = SensorType.PRESSURE)
 
         Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewPressureScreen() {
+    SensorAppTheme {
+        PressureContent(
+            currentReading = SensorReading(
+                sensorType = SensorType.PRESSURE,
+                values = listOf(1012.3f),
+                accuracy = 3,
+                timestampMs = System.currentTimeMillis()
+            ),
+            chartReadings = emptyList()
+        )
     }
 }

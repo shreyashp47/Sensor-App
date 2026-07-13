@@ -10,9 +10,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Download
@@ -20,6 +23,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -46,6 +50,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shreyash.sensorapp.domain.model.SensorReading
 import com.shreyash.sensorapp.domain.model.SensorType
+import com.shreyash.sensorapp.presentation.detail.sensorDisplayName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -87,7 +92,8 @@ fun SensorDetailScaffold(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(sensorType.displayName) },
+                modifier = Modifier.statusBarsPadding(),
+                title = { Text(sensorDisplayName(sensorType)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -103,12 +109,14 @@ fun SensorDetailScaffold(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .navigationBarsPadding()
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
                     onClick = { viewModel.toggleLogging() },
                     modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isLogging) MaterialTheme.colorScheme.error
                             else MaterialTheme.colorScheme.primary
@@ -123,7 +131,7 @@ fun SensorDetailScaffold(
                     Text(if (isLogging) "Stop Logging" else "Start Logging")
                 }
 
-                Button(
+                OutlinedButton(
                     onClick = {
                         scope.launch {
                             val uri = exportToCsv(context, chartReadings, sensorType)
@@ -133,6 +141,7 @@ fun SensorDetailScaffold(
                         }
                     },
                     modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(14.dp),
                     enabled = chartReadings.isNotEmpty()
                 ) {
                     Icon(

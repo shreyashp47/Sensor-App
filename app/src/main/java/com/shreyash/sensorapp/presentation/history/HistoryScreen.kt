@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -52,6 +53,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shreyash.sensorapp.domain.model.LogSession
 import com.shreyash.sensorapp.domain.model.SensorType
+import com.shreyash.sensorapp.presentation.detail.sensorDisplayName
 import com.shreyash.sensorapp.presentation.sensorIcon
 import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
 
@@ -88,6 +90,7 @@ fun HistoryScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
+                modifier = Modifier.statusBarsPadding(),
                 title = { Text("History") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -251,7 +254,7 @@ private fun SessionItem(session: LogSession) {
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = session.sensorType.displayName,
+                    text = sensorDisplayName(session.sensorType),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold
                 )

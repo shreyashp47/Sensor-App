@@ -14,9 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.shreyash.sensorapp.domain.model.SensorReading
 import com.shreyash.sensorapp.domain.model.SensorType
+import com.shreyash.sensorapp.presentation.theme.SensorAppTheme
+import com.shreyash.sensorapp.presentation.detail.sensorUnitText
 
 @Composable
 fun MagnetometerScreen(
@@ -60,9 +63,9 @@ private fun MagnetometerContent(
         Spacer(Modifier.height(12.dp))
 
         Text(
-            text = "X: ${formatDetailValue(currentReading?.values?.getOrNull(0))} ${SensorType.MAGNETOMETER.unitX}" +
-                    "  Y: ${formatDetailValue(currentReading?.values?.getOrNull(1))} ${SensorType.MAGNETOMETER.unitY}" +
-                    "  Z: ${formatDetailValue(currentReading?.values?.getOrNull(2))} ${SensorType.MAGNETOMETER.unitZ}",
+            text = "X: ${formatDetailValue(currentReading?.values?.getOrNull(0))} ${sensorUnitText(SensorType.MAGNETOMETER.unitX)}" +
+                    "  Y: ${formatDetailValue(currentReading?.values?.getOrNull(1))} ${sensorUnitText(SensorType.MAGNETOMETER.unitY)}" +
+                    "  Z: ${formatDetailValue(currentReading?.values?.getOrNull(2))} ${sensorUnitText(SensorType.MAGNETOMETER.unitZ)}",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -73,5 +76,21 @@ private fun MagnetometerContent(
         SensorUsageHint(sensorType = SensorType.MAGNETOMETER)
 
         Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1A1C1E)
+@Composable
+private fun PreviewMagnetometerScreen() {
+    SensorAppTheme {
+        MagnetometerContent(
+            currentReading = SensorReading(
+                sensorType = SensorType.MAGNETOMETER,
+                values = listOf(18.5f, -5.2f, 42.1f),
+                accuracy = 3,
+                timestampMs = System.currentTimeMillis()
+            ),
+            chartReadings = emptyList()
+        )
     }
 }
