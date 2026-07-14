@@ -120,8 +120,9 @@ jobs:
           if [ -z "$notes" ]; then
             notes="- Bug fixes and improvements"
           fi
-          echo "$notes" > /tmp/release_notes.txt
-          echo "notes_file=/tmp/release_notes.txt" >> "$GITHUB_OUTPUT"
+          mkdir -p /tmp/whatsnew
+          echo "$notes" > /tmp/whatsnew/default
+          echo "notes_file=/tmp/whatsnew/default" >> "$GITHUB_OUTPUT"
 
       - name: Upload to Google Play
         uses: r0adkll/upload-google-play@v1.1.5
@@ -132,7 +133,7 @@ jobs:
           tracks: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.track || 'beta' }}
           status: completed
           inAppUpdatePriority: 2
-          releaseNotesFile: /tmp/release_notes.txt
+          whatsNewDirectory: /tmp/whatsnew/
 
       - name: Create GitHub Release
         env:
@@ -140,7 +141,7 @@ jobs:
         run: |
           gh release create "v${{ steps.bump.outputs.new_version_name }}" \
             --title "v${{ steps.bump.outputs.new_version_name }}" \
-            --notes-file /tmp/release_notes.txt \
+            --notes-file /tmp/whatsnew/default \
             app/build/outputs/bundle/release/app-release.aab
 
       - name: Commit version bump
