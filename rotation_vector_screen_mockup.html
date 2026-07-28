@@ -1,0 +1,66 @@
+<div style="background: var(--surface-1); border-radius: 32px; padding: 12px; max-width: 340px; margin: 0 auto;">
+  <div style="background: var(--surface-2); border-radius: 24px; overflow: hidden; border: 0.5px solid var(--border);">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 18px 4px; font-size: 12px; color: var(--text-muted);">
+      <span>9:41</span>
+      <span><i class="ti ti-wifi" style="font-size:14px;" aria-hidden="true"></i></span>
+    </div>
+
+    <div style="padding: 8px 18px 16px; display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <h1 style="margin:0;">Orientation</h1>
+        <p style="margin:2px 0 0; font-size:13px; color:var(--text-secondary);">Rotation vector</p>
+      </div>
+      <div style="width:36px; height:36px; border-radius:50%; background:var(--bg-success); display:flex; align-items:center; justify-content:center;">
+        <i class="ti ti-player-play" style="font-size:18px; color:var(--text-success);" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <!-- Orientation indicator: phone silhouette rotated -->
+    <div style="display:flex; justify-content:center; padding: 8px 0 4px;">
+      <svg viewBox="0 0 220 220" style="width:200px; height:200px;" role="img" aria-label="Device orientation indicator showing a slight rotation">
+        <circle cx="110" cy="110" r="95" fill="none" stroke="#B4B2A9" stroke-width="1"/>
+        <g transform="rotate(18 110 110) skewX(-6)">
+          <rect x="82" y="55" width="56" height="110" rx="10" fill="#CECBF6" stroke="#534AB7" stroke-width="1.5"/>
+          <circle cx="110" cy="145" r="4" fill="#3C3489"/>
+          <rect x="94" y="65" width="32" height="55" rx="2" fill="#F1EFE8"/>
+        </g>
+      </svg>
+    </div>
+
+    <div style="padding: 8px 18px 0; display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px;">
+      <div style="background:var(--surface-1); border-radius:var(--radius); padding:10px 6px; text-align:center;">
+        <p style="margin:0; font-size:12px; color:var(--text-secondary); font-weight:500;">Azimuth</p>
+        <p style="margin:4px 0 0; font-size:17px; font-weight:500;">42°</p>
+      </div>
+      <div style="background:var(--surface-1); border-radius:var(--radius); padding:10px 6px; text-align:center;">
+        <p style="margin:0; font-size:12px; color:var(--text-secondary); font-weight:500;">Pitch</p>
+        <p style="margin:4px 0 0; font-size:17px; font-weight:500;">-6°</p>
+      </div>
+      <div style="background:var(--surface-1); border-radius:var(--radius); padding:10px 6px; text-align:center;">
+        <p style="margin:0; font-size:12px; color:var(--text-secondary); font-weight:500;">Roll</p>
+        <p style="margin:4px 0 0; font-size:17px; font-weight:500;">18°</p>
+      </div>
+    </div>
+
+    <div style="margin:16px 18px 0; background:var(--surface-1); border-radius:12px; padding: 10px 12px;">
+      <p style="margin:0 0 4px; font-size:12px; color:var(--text-muted);">Quaternion (x, y, z, w)</p>
+      <p style="margin:0; font-size:13px; font-family:var(--font-mono); color:var(--text-secondary);">0.08, 0.16, 0.36, 0.92</p>
+    </div>
+
+    <div style="border-top:0.5px solid var(--border); display:flex; justify-content:space-around; padding: 10px 0; margin-top:16px;">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+        <i class="ti ti-chart-bar" style="font-size:20px; color:var(--text-accent);" aria-hidden="true"></i>
+        <span style="font-size:10px; color:var(--text-accent);">Monitor</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+        <i class="ti ti-history" style="font-size:20px; color:var(--text-muted);" aria-hidden="true"></i>
+        <span style="font-size:10px; color:var(--text-muted);">History</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+        <i class="ti ti-user" style="font-size:20px; color:var(--text-muted);" aria-hidden="true"></i>
+        <span style="font-size:10px; color:var(--text-muted);">Profile</span>
+      </div>
+    </div>
+  </div>
+</div>

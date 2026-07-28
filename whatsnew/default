@@ -1,0 +1,8 @@
+- Sensor UI redesign: accelerometer, gravity bubble level, rotation vector orientation
+- Multi-axis chart for sensor data visualization
+- Compass improvements: level indicator with tilt dot, radial label alignment
+- Dashboard redesign with sensor category grouping
+- 3D rotating cube visualization for gyroscope
+- Haptic feedback on proximity, step counter, and gyroscope events
+- Edge-to-edge display fix and general UI polish
+- Bug fixes and performance improvements
