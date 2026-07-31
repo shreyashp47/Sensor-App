@@ -9,6 +9,9 @@ build/
 .cxx
 local.properties
 *.jks
+*.keystore
+keystore_details/
 app/release/
 app/build/
 *.json
+AGENTS.md
