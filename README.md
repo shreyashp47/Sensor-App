@@ -101,3 +101,7 @@ Your feedback helps shape the production release!
 ```
 
 Or open in Android Studio and run on a device/emulator.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
