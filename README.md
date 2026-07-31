@@ -49,9 +49,9 @@ Kotlin 1.9.22 · Jetpack Compose (Material 3) · Clean Architecture · Hilt · R
 
 ## Previews
 
-| Dashboard | Compass | Sensor Detail | History | Settings |
-|-----------|---------|--------------|---------|----------|
-| ![](previews/dashboard.png) | ![](previews/compass.png) | ![](previews/detail.png) | ![](previews/history.png) | ![](previews/settings.png) |
+| Dashboard | Compass | Gyroscope | Gravity | History |
+|-----------|---------|-----------|---------|---------|
+| ![](previews/dashboard.png) | ![](previews/compass.png) | ![](previews/gyroscope.png) | ![](previews/gravity.png) | ![](previews/history.png) |
 
 ## Key Features
 
